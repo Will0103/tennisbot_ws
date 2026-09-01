@@ -114,4 +114,26 @@
         <child link="caster_wheel_link" />
         <origin xyz="${base_length * 3.0 / 8.0} 0 ${-wheel_radius / 2.0}" rpy="0 0 0" />
     </joint>
+
+    <link name="IMU_link">
+        <visual>
+            <origin xyz="0 0 0.01 " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.08 0.08 0.02" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.01 " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.08 0.08 0.02" />
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.1" x="0.08" y="0.08" z="0.02" o_xyz="0 0 0.01" o_rpy="0 0 0" />
+    </link>
+
+    <joint name="IMU_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="IMU_link" />
+        <origin xyz="0.07 0 ${base_height}" rpy="0 0 0" />
+    </joint>
 </robot>

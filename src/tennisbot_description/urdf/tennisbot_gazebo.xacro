@@ -37,21 +37,77 @@
         <material>Gazebo/Grey</material>
     </gazebo>
 
-         <!-- ROS2 Control -->
+    <gazebo reference="IMU_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
          
-     <gazebo>
+         
+    <gazebo>
+         <!-- ROS2 Control -->
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>$(find tennisbot_controller)/config/tennisbot_controllers.yaml</parameters>
         </plugin>
+        <!-- IMU -->
+        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
     </gazebo>
         
-        <!-- IMU -->
-        <!-- <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/> -->
-
+        
         <!-- Camera / LiDAR -->
         <!-- <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
             <render_engine>ogre2</render_engine>
         </plugin> -->
-    
+     <!-- IMU -->
+
+    <gazebo reference="IMU_link">
+        <sensor name="imu" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <gz_frame_id>IMU_link</gz_frame_id>
+            <topic>imu</topic>
+            <imu>
+            <angular_velocity>
+                <x>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>2e-4</stddev>
+                </noise>
+                </x>
+                <y>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>2e-4</stddev>
+                </noise>
+                </y>
+                <z>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>2e-4</stddev>
+                </noise>
+                </z>
+            </angular_velocity>
+            <linear_acceleration>
+                <x>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>1.7e-2</stddev>
+                </noise>
+                </x>
+                <y>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>1.7e-2</stddev>
+                </noise>
+                </y>
+                <z>
+                <noise type="gaussian">
+                    <mean>0.0</mean>
+                    <stddev>1.7e-2</stddev>
+                </noise>
+                </z>
+            </linear_acceleration>
+            </imu>
+        </sensor>
+    </gazebo>
 
 </robot>
