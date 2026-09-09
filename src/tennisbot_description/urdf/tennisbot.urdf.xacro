@@ -117,23 +117,47 @@
 
     <link name="IMU_link">
         <visual>
-            <origin xyz="0 0 0.01 " rpy="0 0 0"/>
+            <origin xyz="0 0 0.005 " rpy="0 0 0"/>
             <geometry>
-                <box size="0.08 0.08 0.02" />
+                <box size="0.04 0.04 0.01" />
             </geometry>
+            <material name="orange" />
         </visual>
         <collision>
-            <origin xyz="0 0 0.01 " rpy="0 0 0"/>
+            <origin xyz="0 0 0.005 " rpy="0 0 0"/>
             <geometry>
-                <box size="0.08 0.08 0.02" />
+                <box size="0.04 0.04 0.01" />
             </geometry>
         </collision>
-        <xacro:box_inertia m="0.1" x="0.08" y="0.08" z="0.02" o_xyz="0 0 0.01" o_rpy="0 0 0" />
+        <xacro:box_inertia m="0.1" x="0.04" y="0.04" z="0.01" o_xyz="0 0 0.005" o_rpy="0 0 0" />
     </link>
 
     <joint name="IMU_joint" type="fixed">
         <parent link="base_link" />
         <child link="IMU_link" />
         <origin xyz="0.07 0 ${base_height}" rpy="0 0 0" />
+    </joint>
+
+    <link name="laser_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.035" length="0.06" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.035" length="0.06" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <xacro:cylinder_inertia m="0.17" r="0.035" h="0.06" o_xyz="0 0 0" o_rpy="0 0 0" />
+    </link>
+
+    <joint name="laser_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="laser_link" />
+        <origin xyz="0 0 ${base_height}" rpy="0 0 0" />
     </joint>
 </robot>
