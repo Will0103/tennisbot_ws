@@ -12,11 +12,11 @@ find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-add_executable(cancel_navigation src/cancel_navigation.cpp)
-ament_target_dependencies(cancel_navigation rclcpp rclcpp_action nav2_msgs sensor_msgs)
+add_executable(joystick_function src/joystick_function.cpp)
+ament_target_dependencies(joystick_function rclcpp rclcpp_action nav2_msgs sensor_msgs)
 
 install(TARGETS
-  cancel_navigation
+  joystick_function
   DESTINATION lib/${PROJECT_NAME}
 )
 
