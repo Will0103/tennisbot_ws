@@ -42,27 +42,25 @@ def generate_launch_description():
         }.items()
     )
 
+    localization = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_localization"),
+            "launch",
+            "global_localization.launch.py"
+        ),
+        condition=UnlessCondition(use_slam)
+    )
+
     rviz = Node(
             package="rviz2",
             executable="rviz2",
             name="rviz2",
             output="screen",
             arguments=["-d", os.path.join(
-                get_package_share_directory("tennisbot_description"),
-                "rviz", "w_laser.rviz")],
+                get_package_share_directory("tennisbot_localization"),
+                "rviz", "map_particleCloud.rviz")],
         )
 
-
-
-    # rviz = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="screen",
-    #     arguments=["-d", os.path.join(
-    #         get_package_share_directory("tennisbot_mapping"),
-    #         "rviz", "slam.rviz")],
-    # )
 
 
     
@@ -72,4 +70,5 @@ def generate_launch_description():
         controller,
         joystick,
         rviz,
+        localization,
     ])

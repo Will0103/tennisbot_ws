@@ -1,4 +1,4 @@
-image: small_warehouse.pgm
+image: map.pgm
 mode: trinary
 resolution: 0.050
 origin: [-6.932, -10.411, 0]
