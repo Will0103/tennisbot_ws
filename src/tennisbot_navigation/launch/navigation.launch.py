@@ -32,7 +32,7 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time}
         ],
         remappings=[
-        ("cmd_vel", "/diffdrive_controller/cmd_vel")
+        ("cmd_vel", "/cmd_vel_nav")
         ]
     )
     

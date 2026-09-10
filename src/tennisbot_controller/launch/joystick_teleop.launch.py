@@ -39,7 +39,7 @@ def generate_launch_description():
         {"use_sim_time": LaunchConfiguration("use_sim_time")}
     ],
     remappings=[
-        ("/cmd_vel", "/diffdrive_controller/cmd_vel")
+        ("/cmd_vel", "/cmd_vel_joy")
     ]
     )
 
@@ -50,6 +50,26 @@ def generate_launch_description():
         parameters=[os.path.join(get_package_share_directory("tennisbot_controller"), "config", "joy_config.yaml"),
                     {"use_sim_time": LaunchConfiguration("use_sim_time")}]
     )
+
+    twist_mux_config = os.path.join(
+        get_package_share_directory("tennisbot_controller"),
+        "config",
+        "twist_mux.yaml"
+    )
+
+    twist_mux = Node(
+        package="twist_mux",
+        executable="twist_mux",
+        name="twist_mux",
+        output="screen",
+        parameters=[
+            twist_mux_config,
+            {"use_stamped": True}
+        ],
+        remappings=[
+            ("cmd_vel_out", "/diffdrive_controller/cmd_vel")
+        ]
+    )
     
 
     return LaunchDescription(
@@ -57,5 +77,6 @@ def generate_launch_description():
             use_sim_time_arg,
             joy_teleop,
             joy_node,
+            twist_mux,
         ]
     )
