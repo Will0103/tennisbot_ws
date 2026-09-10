@@ -51,6 +51,14 @@ def generate_launch_description():
         condition=UnlessCondition(use_slam)
     )
 
+    navigation = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_navigation"),
+            "launch",
+            "navigation.launch.py"
+        ),
+    )
+
     rviz = Node(
             package="rviz2",
             executable="rviz2",
@@ -58,7 +66,7 @@ def generate_launch_description():
             output="screen",
             arguments=["-d", os.path.join(
                 get_package_share_directory("tennisbot_navigation"),
-                "rviz", "cost_map.rviz")],
+                "rviz", "Path_nav2.rviz")],
         )
 
 
@@ -69,6 +77,7 @@ def generate_launch_description():
         gazebo,
         controller,
         joystick,
+        navigation,
         rviz,
         localization,
     ])

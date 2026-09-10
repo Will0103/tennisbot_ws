@@ -12,7 +12,7 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     # lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "behavior_server"]
-    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server"]
+    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator"]
     tennisbot_navigation_pkg = get_package_share_directory("tennisbot_navigation")
 
     use_sim_time_arg = DeclareLaunchArgument(
@@ -31,6 +31,9 @@ def generate_launch_description():
                 "controller_server.yaml"),
             {"use_sim_time": use_sim_time}
         ],
+        remappings=[
+        ("cmd_vel", "/diffdrive_controller/cmd_vel")
+        ]
     )
     
     nav2_planner_server = Node(
@@ -61,19 +64,19 @@ def generate_launch_description():
     #     ],
     # )
     
-    # nav2_bt_navigator = Node(
-    #     package="nav2_bt_navigator",
-    #     executable="bt_navigator",
-    #     name="bt_navigator",
-    #     output="screen",
-    #     parameters=[
-    #         os.path.join(
-    #             tennisbot_navigation_pkg,
-    #             "config",
-    #             "bt_navigator.yaml"),
-    #         {"use_sim_time": use_sim_time}
-    #     ],
-    # )
+    nav2_bt_navigator = Node(
+        package="nav2_bt_navigator",
+        executable="bt_navigator",
+        name="bt_navigator",
+        output="screen",
+        parameters=[
+            os.path.join(
+                tennisbot_navigation_pkg,
+                "config",
+                "bt_navigator.yaml"),
+            {"use_sim_time": use_sim_time}
+        ],
+    )
 
     nav2_smoother_server = Node(
         package="nav2_smoother",
@@ -107,6 +110,6 @@ def generate_launch_description():
         nav2_planner_server,
         nav2_smoother_server,
         # nav2_behaviors,
-        # nav2_bt_navigator,
+        nav2_bt_navigator,
         nav2_lifecycle_manager,
     ])
