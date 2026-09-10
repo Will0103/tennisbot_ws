@@ -57,7 +57,10 @@ def generate_launch_description():
             "launch",
             "navigation.launch.py"
         ),
+        condition=UnlessCondition(use_slam)
     )
+
+    
 
     rviz = Node(
             package="rviz2",
@@ -67,7 +70,29 @@ def generate_launch_description():
             arguments=["-d", os.path.join(
                 get_package_share_directory("tennisbot_navigation"),
                 "rviz", "Path_nav2.rviz")],
+            condition=UnlessCondition(use_slam)
         )
+
+
+    ### SLAM ###
+    slam = IncludeLaunchDescription(
+            os.path.join(
+                get_package_share_directory("tennisbot_mapping"),
+                "launch",
+                "slam.launch.py"
+            ),
+            condition=IfCondition(use_slam)
+        )
+    rviz_slam = Node(
+                package="rviz2",
+                executable="rviz2",
+                name="rviz2",
+                output="screen",
+                arguments=["-d", os.path.join(
+                    get_package_share_directory("tennisbot_mapping"),
+                    "rviz", "slam.rviz")],
+                condition=IfCondition(use_slam)
+            )
 
 
 
@@ -80,4 +105,6 @@ def generate_launch_description():
         navigation,
         rviz,
         localization,
+        slam,
+        rviz_slam,
     ])
