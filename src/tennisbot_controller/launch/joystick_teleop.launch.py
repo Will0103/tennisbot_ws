@@ -17,11 +17,30 @@ def generate_launch_description():
                                       description="Use simulated time"
     )
 
+    # joy_teleop = Node(
+    #     package="joy_teleop",
+    #     executable="joy_teleop",
+    #     parameters=[os.path.join(get_package_share_directory("tennisbot_controller"), "config", "joy_teleop.yaml"),
+    #                 {"use_sim_time": LaunchConfiguration("use_sim_time")}],
+    # )
+
+    ## With Turbo
     joy_teleop = Node(
-        package="joy_teleop",
-        executable="joy_teleop",
-        parameters=[os.path.join(get_package_share_directory("tennisbot_controller"), "config", "joy_teleop.yaml"),
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")}],
+    package="teleop_twist_joy",
+    executable="teleop_node",
+    name="teleop_twist_joy_node",
+    output="screen",
+    parameters=[
+        os.path.join(
+            get_package_share_directory("tennisbot_controller"),
+            "config",
+            "teleop_twist_joy.yaml"
+        ),
+        {"use_sim_time": LaunchConfiguration("use_sim_time")}
+    ],
+    remappings=[
+        ("/cmd_vel", "/diffdrive_controller/cmd_vel")
+    ]
     )
 
     joy_node = Node(
