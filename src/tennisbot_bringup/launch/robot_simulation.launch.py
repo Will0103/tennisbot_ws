@@ -57,8 +57,8 @@ def generate_launch_description():
             name="rviz2",
             output="screen",
             arguments=["-d", os.path.join(
-                get_package_share_directory("tennisbot_localization"),
-                "rviz", "map_particleCloud.rviz")],
+                get_package_share_directory("tennisbot_navigation"),
+                "rviz", "cost_map.rviz")],
         )
 
 
