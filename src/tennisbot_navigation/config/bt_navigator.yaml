@@ -2,7 +2,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: true
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: base_footprint #modify
     odom_topic: /tennisbot_controller/odom
     navigate_to_pose:
       path_blackboard_id: smoothed_path
