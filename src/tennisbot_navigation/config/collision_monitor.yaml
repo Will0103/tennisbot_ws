@@ -1,0 +1,149 @@
+collision_monitor:
+  ros__parameters:
+
+    use_sim_time: true
+
+    base_frame_id: "base_footprint"
+    odom_frame_id: "odom"
+
+    cmd_vel_in_topic: "/cmd_vel_muxed"
+    cmd_vel_out_topic: "/diffdrive_controller/cmd_vel"
+
+    enable_stamped_cmd_vel: true
+
+    transform_tolerance: 0.2
+    source_timeout: 1.0
+    stop_pub_timeout: 2.0
+
+    
+
+    observation_sources: ["scan"]
+
+    scan:
+      type: "scan"
+      topic: "/scan"
+
+    polygons: ["VelocityStop", "SlowZone"]
+
+
+    # ==================================================
+    # 1. Velocity Stop
+    #    根據 cmd_vel 的方向切換不同 Stop 框框
+    # ==================================================
+    VelocityStop:
+      type: "velocity_polygon"
+      action_type: "stop"
+      min_points: 4
+      visualize: true
+      polygon_pub_topic: "/collision_monitor/velocity_stop"
+
+      holonomic: false
+
+      velocity_polygons:
+        - "rotation"
+        - "forward"
+        - "backward"
+        - "stopped"
+
+
+      # -------------------------
+      # 原地旋轉
+      # -------------------------
+      rotation:
+        points: "[[0.25, 0.25],
+                  [0.25, -0.25],
+                  [-0.25, -0.25],
+                  [-0.25, 0.25]]"
+
+        linear_min: 0.0
+        linear_max: 0.05
+
+        theta_min: -2.0
+        theta_max: 2.0
+
+
+      # -------------------------
+      # 往前
+      # -------------------------
+      forward:
+        points: "[[0.35, 0.25],
+                  [0.35, -0.25],
+                  [-0.10, -0.25],
+                  [-0.10, 0.25]]"
+
+        linear_min: 0.0
+        linear_max: 0.5
+
+        theta_min: -2.0
+        theta_max: 2.0
+
+
+      # -------------------------
+      # 往後
+      # -------------------------
+      backward:
+        points: "[[0.10, 0.25],
+                  [0.10, -0.25],
+                  [-0.35, -0.25],
+                  [-0.35, 0.25]]"
+
+        linear_min: -0.5
+        linear_max: 0.0
+
+        theta_min: -2.0
+        theta_max: 2.0
+
+
+      # -------------------------
+      # 最後保底
+      # -------------------------
+      stopped:
+        points: "[[0.25, 0.25],
+                  [0.25, -0.25],
+                  [-0.25, -0.25],
+                  [-0.25, 0.25]]"
+
+        linear_min: -0.5
+        linear_max: 0.5
+
+        theta_min: -2.0
+        theta_max: 2.0
+
+
+    # ==================================================
+    # 2. Slowdown Zone
+    #    障礙物靠近時速度變成 30%
+    # ==================================================
+    SlowZone:
+      type: "circle"
+      radius: 0.45
+
+      action_type: "slowdown"
+      min_points: 4
+
+      slowdown_ratio: 0.5
+
+      visualize: true
+      polygon_pub_topic: "/collision_monitor/slow_zone"
+
+
+
+
+    # polygons: ["StopZone", "SlowZone"]
+
+    # StopZone:
+    #   type: "circle"
+    #   radius: 0.25
+    #   action_type: "stop"
+    #   min_points: 4
+    #   visualize: true
+    #   polygon_pub_topic: "/collision_monitor/stop_zone"
+
+    # SlowZone:
+    #   type: "circle"
+    #   radius: 0.50
+    #   action_type: "slowdown"
+    #   min_points: 4
+    #   slowdown_ratio: 0.3
+    #   visualize: true
+    #   polygon_pub_topic: "/collision_monitor/slow_zone"

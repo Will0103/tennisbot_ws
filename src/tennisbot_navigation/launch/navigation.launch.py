@@ -12,7 +12,7 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     # lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "behavior_server"]
-    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator"]
+    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "collision_monitor"]
     tennisbot_navigation_pkg = get_package_share_directory("tennisbot_navigation")
 
     use_sim_time_arg = DeclareLaunchArgument(
@@ -92,6 +92,21 @@ def generate_launch_description():
         ],
     )
 
+    collision_monitor = Node(
+        package="nav2_collision_monitor",
+        executable="collision_monitor",
+        name="collision_monitor",
+        output="screen",
+        parameters=[
+            os.path.join(
+                get_package_share_directory("tennisbot_navigation"),
+                "config",
+                "collision_monitor.yaml"
+            ),
+            {"use_sim_time": use_sim_time}
+        ]
+    )
+
     nav2_lifecycle_manager = Node(
         package="nav2_lifecycle_manager",
         executable="lifecycle_manager",
@@ -112,4 +127,5 @@ def generate_launch_description():
         # nav2_behaviors,
         nav2_bt_navigator,
         nav2_lifecycle_manager,
+        collision_monitor,
     ])

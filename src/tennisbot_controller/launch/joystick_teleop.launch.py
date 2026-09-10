@@ -67,7 +67,7 @@ def generate_launch_description():
             {"use_stamped": True}
         ],
         remappings=[
-            ("cmd_vel_out", "/diffdrive_controller/cmd_vel")
+            ("cmd_vel_out", "/cmd_vel_muxed") # For collision monitor
         ]
     )
 
