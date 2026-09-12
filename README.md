@@ -76,7 +76,6 @@ To switch worlds or use a different saved map, pass `world_name` (e.g. `small_ho
 
 - [ ] Add a camera and integrate simple object detection to find a tennis ball
 - [ ] Move from simulation to a physical robot platform
-- [ ] Expand test coverage in `small_house` (the target environment for home navigation)
 
 ## Author
 
