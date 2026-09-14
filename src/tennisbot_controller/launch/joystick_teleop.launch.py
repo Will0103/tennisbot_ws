@@ -71,14 +71,14 @@ def generate_launch_description():
         ]
     )
 
-    joystick_function = Node(
-            package="tennisbot_controller",
-            executable="joystick_function",
-            name="joystick_function",
-            parameters=[
-                        {"cancel_button": 2}
-                    ]
-        )
+    # joystick_function = Node(
+    #         package="tennisbot_controller",
+    #         executable="joystick_function",
+    #         name="joystick_function",
+    #         parameters=[
+    #                     {"cancel_button": 2}
+    #                 ]
+    #     )
     
 
     return LaunchDescription(
@@ -87,6 +87,6 @@ def generate_launch_description():
             joy_teleop,
             joy_node,
             twist_mux,
-            joystick_function,
+            # joystick_function,
         ]
     )

@@ -17,7 +17,7 @@ using namespace std::placeholders;
 class PatrolNodesNode : public rclcpp::Node
 {
 public:
-    PatrolNodesNode() : Node("patrol_node")
+    PatrolNodesNode() : Node("patrol_node"), current_way_point_(0)
     {
         patrol_nodes_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "follow_waypoints");
         declare_parameter<int>("start_button", 3); //Y
@@ -60,7 +60,7 @@ private:
     {
         auto goal = FollowWaypoints::Goal();
         goal.number_of_loops = 0;
-        goal.goal_index = 0;
+        goal.goal_index = current_way_point_;
 
         if (waypoints_x_.size() != waypoints_y_.size() ||  waypoints_x_.size() < 2)
         {
@@ -80,6 +80,7 @@ private:
         auto options = rclcpp_action::Client<FollowWaypoints>::SendGoalOptions();
         options.goal_response_callback = std::bind(&PatrolNodesNode::goal_response_callback, this, _1);
         options.result_callback = std::bind(&PatrolNodesNode::result_callback, this, _1);
+        options.feedback_callback = std::bind(&PatrolNodesNode::feedback_callback, this, _1, _2);
 
 
         patrol_nodes_client_->async_send_goal(goal,options);
@@ -93,7 +94,7 @@ private:
         }
         patrol_goal_handle_ = goal_handle;
         patrol_ongoing_ = true;
-        RCLCPP_INFO(get_logger(),"Patrol goal accepted");
+        // RCLCPP_INFO(get_logger(),"Patrol goal accepted");
     }
 
     void result_callback(const GoalHandleFollow::WrappedResult &result)
@@ -102,6 +103,7 @@ private:
         patrol_goal_handle_.reset();
         if (status == rclcpp_action::ResultCode::SUCCEEDED){
             RCLCPP_INFO(get_logger(),"Patrol goal succeed");
+            current_way_point_ = 0;
             send_goal();
         }else if (status == rclcpp_action::ResultCode::CANCELED){
             RCLCPP_INFO(get_logger(),"Patrol goal is canceled");
@@ -112,7 +114,11 @@ private:
         }
     }
 
-
+    void feedback_callback(const std::shared_ptr<GoalHandleFollow> &goal_handle, const std::shared_ptr<const FollowWaypoints::Feedback> feedback)
+    {
+        (void)goal_handle;
+        current_way_point_ = feedback->current_waypoint;
+    }
 
 
     geometry_msgs::msg::PoseStamped Pose2Stamp(double x, double y, double yaw)
@@ -135,6 +141,7 @@ private:
     GoalHandleFollow::SharedPtr patrol_goal_handle_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;   
     int cancel_button_, start_button_; 
+    int current_way_point_;
     bool patrol_ongoing_ = false;
     bool previous_cancel_pressed_ = false;
     bool previous_start_pressed_ = false;
