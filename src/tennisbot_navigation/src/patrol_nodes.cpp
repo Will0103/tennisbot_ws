@@ -62,17 +62,6 @@ private:
         goal.number_of_loops = 0;
         goal.goal_index = 0;
 
-        // double yaw1 = atan2(6.0 - 3.0, -4.0 - 1.0);      // P1 → P2
-        // double yaw2 = atan2(2.0 - 6.0, -4.0 - (-4.0));   // P2 → P3
-        // double yaw3 = atan2(0.0 - 2.0, 0.0 - (-4.0));  // P3 → P4
-        // double yaw4 = atan2(3.0 - 0.0, 1.0 - 0.0); // P4 → P1
-
-        // goal.poses.push_back(Pose2Stamp(1.0,3.0, yaw1));
-        // goal.poses.push_back(Pose2Stamp(-4.0,6.0, yaw2));
-        // goal.poses.push_back(Pose2Stamp(-4.0,2.0, yaw3));
-        // goal.poses.push_back(Pose2Stamp(0.0, 0.0, yaw4));
-
-
         if (waypoints_x_.size() != waypoints_y_.size() ||  waypoints_x_.size() < 2)
         {
             RCLCPP_ERROR(
