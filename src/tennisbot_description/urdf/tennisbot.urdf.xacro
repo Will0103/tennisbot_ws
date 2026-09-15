@@ -160,4 +160,36 @@
         <child link="laser_link" />
         <origin xyz="0 0 ${base_height}" rpy="0 0 0" />
     </joint>
+
+    <link name="camera_link">
+        <visual>
+            <origin xyz="0 0 0.015 " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.08 0.03" />
+            </geometry>
+            <material name="orange" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.015 " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.08 0.03" />
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.1" x="0.03" y="0.08" z="0.03" o_xyz="0 0 0.015" o_rpy="0 0 0" />
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_link" />
+        <origin xyz="${base_length / 2.0 + 0.015} 0 ${base_height / 2.0}" rpy="0 0 0" />
+    </joint>
+
+    <link name="camera_optical_link"/>
+
+    <joint name="camera_optical_joint" type="fixed">
+        <parent link="camera_link"/>
+        <child link="camera_optical_link"/>
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+    
 </robot>

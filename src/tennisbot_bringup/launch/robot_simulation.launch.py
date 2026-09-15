@@ -69,7 +69,7 @@ def generate_launch_description():
             output="screen",
             arguments=["-d", os.path.join(
                 get_package_share_directory("tennisbot_navigation"),
-                "rviz", "Path_nav2.rviz")],
+                "rviz", "Path_nav2_camera.rviz")],
             condition=UnlessCondition(use_slam)
         )
 
