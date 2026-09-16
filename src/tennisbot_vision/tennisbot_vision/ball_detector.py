@@ -9,27 +9,58 @@ from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
 from std_srvs.srv import Empty
 
+from tf2_ros import Buffer, TransformListener
+from geometry_msgs.msg import PointStamped
+from tf2_geometry_msgs import do_transform_point
+from rclpy.time import Time
+
+from nav2_msgs.action import NavigateToPose
+from rclpy.action import ActionClient
+
+from sensor_msgs.msg import Joy
+
 class BallDetectorNode(Node):
     def __init__(self):
         super().__init__("ball_detector")
         self.ball_diameter = 0.067
         self.fx = None
 
+        #Image recognition
         self.bridge = CvBridge()
         self.image_sub = self.create_subscription(Image, "/camera/image_raw", self.image_callback, qos_profile_sensor_data)
-        self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, 10)
+        self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, qos_profile_sensor_data)
+        
+        self.lower1 = np.array([31, 65 , 86])
+        self.upper1 = np.array([52, 255, 255])
+        self.lower2 = np.array([3, 198, 104])
+        self.upper2 = np.array([15, 255, 255])
+        self.kernel = np.ones((11, 11), np.uint8)
 
+        #Cancel Patroling 
         self.cancel_patrol = self.create_client(Empty, "ball_detection")
         self.isball_counter = 0
         self.cancel_request = False
 
-        self.lower1 = np.array([31, 65 , 86])
-        self.upper1 = np.array([52, 255, 255])
+        #Locate tennis ball
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.lower2 = np.array([3, 198, 104])
-        self.upper2 = np.array([15, 255, 255])
+        #Go to ball
+        self.gotoball_client = ActionClient(self, NavigateToPose, "/navigate_to_pose")  
+        self.goal_handle_ = None
+        self.nav_ongoing = False
+        self.ball_approach_done = False
 
-        self.kernel = np.ones((11, 11), np.uint8)
+        #Reset button
+        self.reset_sub = self.create_subscription(Joy, "joy", self.reset_callback, 10)
+        self.reset_button = 0
+        self.previous_reset_button = False
+        #Gotoball button
+        self.enable_gotoball_button = 7
+        self.enable_gotoball = False
+        self.previous_gotoball_button = False
+        
+
         self.get_logger().info("Ball detector started !")
 
     def info_callback(self, msg):
@@ -42,8 +73,7 @@ class BallDetectorNode(Node):
         self.destroy_subscription(self.info_sub)
         self.info_sub = None
 
-    def image_callback(self, msg):
-
+    def image_callback(self, msg: Image):
         if self.fx is None:
             return
         
@@ -59,7 +89,11 @@ class BallDetectorNode(Node):
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contour_image = frame.copy()
         cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 2)
-        cv2.imshow("Contour", contour_image)
+        # cv2.imshow("Contour", contour_image)
+        if self.enable_gotoball:
+            cv2.putText(frame, "Enable find ball", (350, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+        else:
+            cv2.putText(frame, "Disable find ball", (350, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
 
         if contours:
             largest_contour = max(contours, key=cv2.contourArea)
@@ -71,17 +105,9 @@ class BallDetectorNode(Node):
                 circularity = 4 * np.pi * area / (perimeter * perimeter)
                 
             else:
-                circularity = 0
-                
+                circularity = 0                
             
-            if area > 100 and circularity > 0.60:
-                #Cancle patroling
-                self.isball_counter += 1
-                if self.isball_counter >= 3 and not self.cancel_request:
-                    request = Empty.Request()
-                    self.cancel_patrol.call_async(request)
-                    self.cancel_request = True
-
+            if area > 100 and circularity > 0.60 and self.enable_gotoball:
                 #Locate tennis ball
                 (x, y), radius = cv2.minEnclosingCircle(largest_contour)
 
@@ -102,15 +128,101 @@ class BallDetectorNode(Node):
                 cv2.putText(frame, f"Circularity: {circularity:.2f} ", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 cv2.putText(frame, f"Distance: {distance:.2f} ", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 cv2.putText(frame, f"X: {d_X:.2f}, Y: {d_Y:.2f} ", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+                #Cancle patroling
+                self.isball_counter += 1
+                if self.isball_counter >= 3 and not self.cancel_request:
+                    request = Empty.Request()
+                    self.cancel_patrol.call_async(request)
+                    self.cancel_request = True
+
+                #Locate tennis ball 
+                if self.cancel_request is True and not self.nav_ongoing and not self.ball_approach_done:
+                    
+                    ball_camera = PointStamped()
+                    ball_camera.header.frame_id = "camera_optical_link"
+                    ball_camera.header.stamp = msg.header.stamp
+                    ball_camera.point.x = d_X
+                    ball_camera.point.y = d_Y
+                    ball_camera.point.z = distance
+
+                    try:
+                        transform = self.tf_buffer.lookup_transform("map", "camera_optical_link", Time.from_msg(msg.header.stamp))   #Find transform rule
+                        ball_map = do_transform_point(ball_camera, transform)  #Do transform
+                        self.get_logger().info(
+                            f"Ball map: "
+                            f"x={ball_map.point.x:.2f}, "
+                            f"y={ball_map.point.y:.2f}"
+                        )
+                        goal = NavigateToPose.Goal()
+                        goal.pose.header.frame_id = "map"
+                        goal.pose.header.stamp = self.get_clock().now().to_msg() 
+                        goal.pose.pose.position.x = ball_map.point.x
+                        goal.pose.pose.position.y = ball_map.point.y
+                        goal.pose.pose.orientation.w = 1.0
+
+                        send_goal_future = self.gotoball_client.send_goal_async(goal)
+                        send_goal_future.add_done_callback(self.goal_response_callback)
+                        self.nav_ongoing = True
+
+                    except Exception as e:
+                        self.get_logger().warn(f"TF failed: {e}")
+
+                if distance < 0.3 and self.goal_handle_ is not None:
+                    self.get_logger().warn("reach < 0.3m")
+                    self.ball_approach_done = True
+                    self.goal_handle_.cancel_goal_async()
+
             else:
                 self.isball_counter = 0
                 self.cancel_request = False
+        else:
+            self.isball_counter = 0
+            self.cancel_request = False
 
         cv2.imshow("Webcam", frame)
         # cv2.imshow("Mask", mask)
 
         cv2.waitKey(1)
-    
+
+    ### For NavigateToPose Action
+    def goal_response_callback(self, future):
+        self.goal_handle_ = future.result()
+        if not self.goal_handle_.accepted:
+            self.get_logger().warn("Goal rejected")
+            self.nav_ongoing = False
+            return
+        self.get_logger().info("GoToBall goal accepted")
+        self.goal_handle_.get_result_async().add_done_callback(self.goal_result_callback)
+
+    def goal_result_callback(self, future):
+        self.nav_ongoing = False
+        self.goal_handle_ = None
+        self.get_logger().info("GoToBall finished")
+
+    #Reset button & gotoball button
+    def reset_callback(self, msg: Joy):
+        if msg.buttons[self.reset_button] == 1 and not self.previous_reset_button:
+            if self.goal_handle_ is not None:
+                self.goal_handle_.cancel_goal_async()
+
+            self.isball_counter = 0
+            self.cancel_request = False
+            self.ball_approach_done = False
+            self.enable_gotball = False
+            self.previous_gotoball_button = False
+
+            self.get_logger().info("Ball detector state reset")
+        self.previous_reset_button = msg.buttons[self.reset_button] == 1
+
+        if msg.buttons[self.enable_gotoball_button] == 1 and not self.previous_gotoball_button:
+            if self.enable_gotoball is False:
+                self.get_logger().warn("Enable gotoball function")
+                self.enable_gotoball = True
+            else:
+                self.get_logger().warn("Disable gotoball function")
+                self.enable_gotoball = False
+        self.previous_gotoball_button = msg.buttons[self.enable_gotoball_button] == 1
 
 def main(args=None): 
     rclpy.init(args=args) 
