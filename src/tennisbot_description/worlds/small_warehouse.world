@@ -8,22 +8,61 @@
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
+    <model name="tennis_ball">
+        <!-- <static>true</static> -->
+        <pose>1.0 1.0 0.067 0 0 0</pose>
 
-        <model name="aws_robomaker_warehouse_ShelfF_01_001">
+        <link name="ball_link">
+            
+            <inertial>
+                <mass>0.057</mass>
+                <inertia>
+                    <ixx>0.0000256</ixx>
+                    <iyy>0.0000256</iyy>
+                    <izz>0.0000256</izz>
+                </inertia>
+            </inertial>
+
+            <collision name="collision">
+            <geometry>
+                <sphere>
+                <radius>0.0335</radius>
+                </sphere>
+            </geometry>
+            </collision>
+
+            <visual name="visual">
+            <geometry>
+                <sphere>
+                <radius>0.0335</radius>
+                </sphere>
+            </geometry>
+
+            <material>
+                <ambient>0.7 1.0 0.1 1</ambient>
+                <diffuse>0.7 1.0 0.1 1</diffuse>
+            </material>
+            </visual>
+
+        </link>
+    </model>
+
+
+    <model name="aws_robomaker_warehouse_ShelfF_01_001">
         <include>
             <uri>model://aws_robomaker_warehouse_ShelfF_01</uri>
         </include>
         <pose frame="">-5.795143 -0.956635 0 0 0 0</pose>
 	</model>
 
-        <model name="aws_robomaker_warehouse_WallB_01_001">
+    <model name="aws_robomaker_warehouse_WallB_01_001">
         <include>
             <uri>model://aws_robomaker_warehouse_WallB_01</uri>
         </include>
         <pose frame="">0.0 0.0 0 0 0 0</pose>
 	</model>
 
-        <model name="aws_robomaker_warehouse_ShelfE_01_001">
+    <model name="aws_robomaker_warehouse_ShelfE_01_001">
         <include>
             <uri>model://aws_robomaker_warehouse_ShelfE_01</uri>
         </include>

@@ -407,15 +407,15 @@ while True:
         tuner_display
     )
 
-    cv2.imshow(
-        "Mask",
-        mask
-    )
+    # cv2.imshow(
+    #     "Mask",
+    #     mask
+    # )
 
-    cv2.imshow(
-        "Webcam",
-        frame
-    )
+    # cv2.imshow(
+    #     "Webcam",
+    #     frame
+    # )
 
 
     # ========================================================

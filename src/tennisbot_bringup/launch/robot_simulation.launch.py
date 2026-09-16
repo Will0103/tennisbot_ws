@@ -1,6 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, TimerAction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -60,6 +60,11 @@ def generate_launch_description():
         condition=UnlessCondition(use_slam)
     )
 
+    delayed_navigation = TimerAction(
+        period=2.0,
+        actions=[navigation]
+    )
+
     
 
     rviz = Node(
@@ -102,7 +107,7 @@ def generate_launch_description():
         gazebo,
         controller,
         joystick,
-        navigation,
+        delayed_navigation,
         rviz,
         localization,
         slam,

@@ -9,11 +9,11 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 cap.set(cv2.CAP_PROP_FPS, 30)
 
 # Color 1
-lower1 = np.array([27, 65, 86])
+lower1 = np.array([31, 65, 86])
 upper1 = np.array([52, 255, 255])
 # Color 2
-lower2 = np.array([1, 148, 103])
-upper2 = np.array([23, 255, 255])
+lower2 = np.array([3, 98, 104])
+upper2 = np.array([15, 255, 255])
 
 kernel = np.ones((11, 11), np.uint8)
 while True:
@@ -52,7 +52,8 @@ while True:
         2
     )
 
-    # cv2.imshow("Contour", contour_image)
+    cv2.imshow("Contour", contour_image)
+
 
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
@@ -65,7 +66,7 @@ while True:
         else:
             circularity = 0
         
-        if area > 500 and circularity > 0.65:
+        if area > 300 and circularity > 0.60:
             (x, y), radius = cv2.minEnclosingCircle(largest_contour)
 
             center = (int(x), int(y))
