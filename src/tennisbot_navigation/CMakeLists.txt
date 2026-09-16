@@ -14,9 +14,10 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 add_executable(patrol_nodes src/patrol_nodes.cpp)
-ament_target_dependencies(patrol_nodes rclcpp rclcpp_action nav2_msgs geometry_msgs tf2 tf2_geometry_msgs sensor_msgs)
+ament_target_dependencies(patrol_nodes rclcpp rclcpp_action nav2_msgs geometry_msgs tf2 tf2_geometry_msgs sensor_msgs std_srvs)
 
 install(TARGETS
   patrol_nodes

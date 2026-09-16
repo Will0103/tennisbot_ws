@@ -5,6 +5,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+#include <std_srvs/srv/empty.hpp>
 
 #include <cmath>
 #include <vector>
@@ -30,6 +31,8 @@ public:
         declare_parameter<std::vector<double>>("waypoints_y",{0.0, 4.0, 4.0, 0.0});
         waypoints_x_ = get_parameter("waypoints_x").as_double_array();
         waypoints_y_ = get_parameter("waypoints_y").as_double_array();
+
+        ball_detector_client_ = this->create_service<std_srvs::srv::Empty>("ball_detection", std::bind(&PatrolNodesNode::ball_detection_callback, this, _1, _2));
     }
 private:
     void joy_callback(const sensor_msgs::msg::Joy &msg)
@@ -136,6 +139,17 @@ private:
         return result;
     }
 
+    void ball_detection_callback(const std_srvs::srv::Empty::Request::SharedPtr request, const std_srvs::srv::Empty::Response::SharedPtr response)
+    {
+        (void)request;
+        (void)response;
+        if (!patrol_ongoing_ || !patrol_goal_handle_){
+            return;
+        }    
+        patrol_nodes_client_->async_cancel_goal(patrol_goal_handle_);
+        RCLCPP_INFO(get_logger(),"Cancel patroling");
+        current_way_point_ ++;
+    }
 
     rclcpp_action::Client<FollowWaypoints>::SharedPtr patrol_nodes_client_;
     GoalHandleFollow::SharedPtr patrol_goal_handle_;
@@ -147,6 +161,7 @@ private:
     bool previous_start_pressed_ = false;
     std::vector<double> waypoints_x_;
     std::vector<double> waypoints_y_;   
+    rclcpp::Service<std_srvs::srv::Empty>::SharedPtr ball_detector_client_;
 };
 
 int main(int argc, char **argv)
