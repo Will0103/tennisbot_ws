@@ -51,16 +51,12 @@ class BallDetectorNode(Node):
         self.nav_ongoing = False
         self.ball_approach_done = False
 
-        #Reset button
-        self.reset_sub = self.create_subscription(Joy, "joy", self.reset_callback, 10)
-        self.reset_button = 0
-        self.previous_reset_button = False
         #Gotoball button
+        self.enable_gotoball_sub = self.create_subscription(Joy, "joy", self.enable_gotoball_callback, 10)
         self.enable_gotoball_button = 7
         self.enable_gotoball = False
         self.previous_gotoball_button = False
         
-
         self.get_logger().info("Ball detector started !")
 
     def info_callback(self, msg):
@@ -91,9 +87,9 @@ class BallDetectorNode(Node):
         cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 2)
         # cv2.imshow("Contour", contour_image)
         if self.enable_gotoball:
-            cv2.putText(frame, "Enable find ball", (350, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+            cv2.putText(frame, "Enable find ball", (370, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
         else:
-            cv2.putText(frame, "Disable find ball", (350, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+            cv2.putText(frame, "Disable find ball", (370, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
 
         if contours:
             largest_contour = max(contours, key=cv2.contourArea)
@@ -168,7 +164,7 @@ class BallDetectorNode(Node):
                     except Exception as e:
                         self.get_logger().warn(f"TF failed: {e}")
 
-                if distance < 0.3 and self.goal_handle_ is not None:
+                if distance < 0.3 and self.goal_handle_ is not None and not self.ball_approach_done:
                     self.get_logger().warn("reach < 0.3m")
                     self.ball_approach_done = True
                     self.goal_handle_.cancel_goal_async()
@@ -200,21 +196,8 @@ class BallDetectorNode(Node):
         self.goal_handle_ = None
         self.get_logger().info("GoToBall finished")
 
-    #Reset button & gotoball button
-    def reset_callback(self, msg: Joy):
-        if msg.buttons[self.reset_button] == 1 and not self.previous_reset_button:
-            if self.goal_handle_ is not None:
-                self.goal_handle_.cancel_goal_async()
-
-            self.isball_counter = 0
-            self.cancel_request = False
-            self.ball_approach_done = False
-            self.enable_gotball = False
-            self.previous_gotoball_button = False
-
-            self.get_logger().info("Ball detector state reset")
-        self.previous_reset_button = msg.buttons[self.reset_button] == 1
-
+    #Enable gotoball button
+    def enable_gotoball_callback(self, msg: Joy):
         if msg.buttons[self.enable_gotoball_button] == 1 and not self.previous_gotoball_button:
             if self.enable_gotoball is False:
                 self.get_logger().warn("Enable gotoball function")
@@ -222,6 +205,12 @@ class BallDetectorNode(Node):
             else:
                 self.get_logger().warn("Disable gotoball function")
                 self.enable_gotoball = False
+                #reset
+                if self.goal_handle_ is not None:
+                    self.goal_handle_.cancel_goal_async()
+                self.isball_counter = 0
+                self.cancel_request = False
+                self.ball_approach_done = False
         self.previous_gotoball_button = msg.buttons[self.enable_gotoball_button] == 1
 
 def main(args=None): 
