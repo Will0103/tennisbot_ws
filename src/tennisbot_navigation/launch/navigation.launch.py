@@ -36,15 +36,21 @@ def generate_launch_description():
         package="nav2_controller",
         executable="controller_server",
         output="screen",
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            "warn"
+        ],
         parameters=[
             os.path.join(
                 tennisbot_navigation_pkg,
                 "config",
-                "controller_server.yaml"),
+                "controller_server.yaml"
+            ),
             {"use_sim_time": use_sim_time}
         ],
         remappings=[
-        ("cmd_vel", "/cmd_vel_nav")
+            ("cmd_vel", "/cmd_vel_nav")
         ]
     )
     
@@ -86,11 +92,17 @@ def generate_launch_description():
         executable="smoother_server",
         name="smoother_server",
         output="screen",
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            "warn"
+        ],
         parameters=[
             os.path.join(
                 tennisbot_navigation_pkg,
                 "config",
-                "smoother_server.yaml"),
+                "smoother_server.yaml"
+            ),
             {"use_sim_time": use_sim_time}
         ],
     )
