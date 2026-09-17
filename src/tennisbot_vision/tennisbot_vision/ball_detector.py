@@ -18,6 +18,7 @@ from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
 
 from sensor_msgs.msg import Joy
+from std_msgs.msg import Bool
 
 class BallDetectorNode(Node):
     def __init__(self):
@@ -39,7 +40,7 @@ class BallDetectorNode(Node):
         #Cancel Patroling 
         self.cancel_patrol = self.create_client(Empty, "ball_detection")
         self.isball_counter = 0
-        self.cancel_request = False
+        self.sent_cancel_request = False
 
         #Locate tennis ball
         self.tf_buffer = Buffer()
@@ -48,7 +49,7 @@ class BallDetectorNode(Node):
         #Go to ball
         self.gotoball_client = ActionClient(self, NavigateToPose, "/navigate_to_pose")  
         self.goal_handle_ = None
-        self.nav_ongoing = False
+        self.gotoball_ongoing = False
         self.ball_approach_done = False
 
         #Gotoball button
@@ -57,6 +58,10 @@ class BallDetectorNode(Node):
         self.enable_gotoball_button = self.get_parameter("enable_button").value
         self.enable_gotoball = False
         self.previous_gotoball_button = False
+
+        #Patrol status
+        self.patrol_status_sub = self.create_subscription(Bool, "patrol_status", self.patrol_status_callback, 10)
+        self.patrol_status = False
         
         self.get_logger().info("Ball detector started !")
 
@@ -128,13 +133,13 @@ class BallDetectorNode(Node):
 
                 #Cancle patroling
                 self.isball_counter += 1
-                if self.isball_counter >= 3 and not self.cancel_request:
+                if self.isball_counter >= 3 and not self.sent_cancel_request:
                     request = Empty.Request()
                     self.cancel_patrol.call_async(request)
-                    self.cancel_request = True
+                    self.sent_cancel_request = True
 
                 #Locate tennis ball 
-                if self.cancel_request is True and not self.nav_ongoing and not self.ball_approach_done:
+                if self.sent_cancel_request is True and not self.gotoball_ongoing and not self.ball_approach_done and not self.patrol_status:
                     
                     ball_camera = PointStamped()
                     ball_camera.header.frame_id = "camera_optical_link"
@@ -160,7 +165,7 @@ class BallDetectorNode(Node):
 
                         send_goal_future = self.gotoball_client.send_goal_async(goal)
                         send_goal_future.add_done_callback(self.goal_response_callback)
-                        self.nav_ongoing = True
+                        self.gotoball_ongoing = True
 
                     except Exception as e:
                         self.get_logger().warn(f"TF failed: {e}")
@@ -172,10 +177,8 @@ class BallDetectorNode(Node):
 
             else:
                 self.isball_counter = 0
-                self.cancel_request = False
         else:
             self.isball_counter = 0
-            self.cancel_request = False
 
         cv2.imshow("Webcam", frame)
         # cv2.imshow("Mask", mask)
@@ -187,13 +190,13 @@ class BallDetectorNode(Node):
         self.goal_handle_ = future.result()
         if not self.goal_handle_.accepted:
             self.get_logger().warn("Goal rejected")
-            self.nav_ongoing = False
+            self.gotoball_ongoing = False
             return
         self.get_logger().info("GoToBall goal accepted")
         self.goal_handle_.get_result_async().add_done_callback(self.goal_result_callback)
 
     def goal_result_callback(self, future):
-        self.nav_ongoing = False
+        self.gotoball_ongoing = False
         self.goal_handle_ = None
         self.get_logger().info("GoToBall finished")
 
@@ -210,9 +213,13 @@ class BallDetectorNode(Node):
                 if self.goal_handle_ is not None:
                     self.goal_handle_.cancel_goal_async()
                 self.isball_counter = 0
-                self.cancel_request = False
+                self.sent_cancel_request = False
                 self.ball_approach_done = False
         self.previous_gotoball_button = msg.buttons[self.enable_gotoball_button] == 1
+
+    #Patrol stause
+    def patrol_status_callback(self, msg: Bool):
+        self.patrol_status = msg.data
 
 def main(args=None): 
     rclpy.init(args=args) 

@@ -6,6 +6,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <std_srvs/srv/empty.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 #include <cmath>
 #include <vector>
@@ -33,6 +34,9 @@ public:
         waypoints_y_ = get_parameter("waypoints_y").as_double_array();
 
         ball_detector_client_ = this->create_service<std_srvs::srv::Empty>("ball_detection", std::bind(&PatrolNodesNode::ball_detection_callback, this, _1, _2));
+        patrol_status_pub_ = this->create_publisher<std_msgs::msg::Bool>("patrol_status", 10);
+        timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&PatrolNodesNode::timer_callback, this));
+
     }
 private:
     void joy_callback(const sensor_msgs::msg::Joy &msg)
@@ -148,7 +152,14 @@ private:
         }    
         patrol_nodes_client_->async_cancel_goal(patrol_goal_handle_);
         RCLCPP_INFO(get_logger(),"Cancel patroling");
-        current_way_point_ ++;
+        current_way_point_ =(current_way_point_ + 1) % waypoints_x_.size();
+    }
+
+    void timer_callback()
+    {
+        auto msg = std_msgs::msg::Bool();
+        msg.data = patrol_ongoing_;
+        patrol_status_pub_->publish(msg);
     }
 
     rclcpp_action::Client<FollowWaypoints>::SharedPtr patrol_nodes_client_;
@@ -162,6 +173,8 @@ private:
     std::vector<double> waypoints_x_;
     std::vector<double> waypoints_y_;   
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr ball_detector_client_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr patrol_status_pub_;
+    rclcpp::TimerBase::SharedPtr timer_;
 };
 
 int main(int argc, char **argv)
