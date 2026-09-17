@@ -5,15 +5,15 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch.actions import IncludeLaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
     
-    # tennisbot_controller_pkg = get_package_share_directory('tennisbot_controller')
-
-    use_sim_time_arg = DeclareLaunchArgument(name="use_sim_time", default_value="True",
-                                      description="Use simulated time"
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    use_sim_time_arg = DeclareLaunchArgument(
+        "use_sim_time",
+        default_value="true",
+        description="Use simulated time"
     )
 
     pkg_share = get_package_share_directory("tennisbot_navigation")
@@ -33,29 +33,35 @@ def generate_launch_description():
 
     ## With Turbo
     joy_teleop = Node(
-    package="teleop_twist_joy",
-    executable="teleop_node",
-    name="teleop_twist_joy_node",
-    output="screen",
-    parameters=[
-        os.path.join(
-            get_package_share_directory("tennisbot_controller"),
-            "config",
-            "teleop_twist_joy.yaml"
-        ),
-        {"use_sim_time": LaunchConfiguration("use_sim_time")}
-    ],
-    remappings=[
-        ("/cmd_vel", "/cmd_vel_joy")
-    ]
+        package="teleop_twist_joy",
+        executable="teleop_node",
+        name="teleop_twist_joy_node",
+        output="screen",
+        parameters=[
+            os.path.join(
+                get_package_share_directory("tennisbot_controller"),
+                "config",
+                "teleop_twist_joy.yaml"
+            ),
+            {"use_sim_time": use_sim_time}
+        ],
+        remappings=[
+            ("/cmd_vel", "/cmd_vel_joy")
+        ]
     )
 
     joy_node = Node(
         package="joy",
         executable="joy_node",
         name="joystick",
-        parameters=[os.path.join(get_package_share_directory("tennisbot_controller"), "config", "joy_config.yaml"),
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")}]
+        parameters=[
+            os.path.join(
+                get_package_share_directory("tennisbot_controller"),
+                "config",
+                "joy_config.yaml"
+            ),
+            {"use_sim_time": use_sim_time}
+        ]
     )
 
     twist_mux_config = os.path.join(
@@ -71,10 +77,11 @@ def generate_launch_description():
         output="screen",
         parameters=[
             twist_mux_config,
-            {"use_stamped": True}
+            {"use_stamped": True},
+            {"use_sim_time": use_sim_time}
         ],
         remappings=[
-            ("cmd_vel_out", "/cmd_vel_muxed") # For collision monitor
+            ("cmd_vel_out", "/cmd_vel_muxed")
         ]
     )
 
@@ -85,7 +92,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             collision_monitor_config,
-            {"use_sim_time": LaunchConfiguration("use_sim_time")}
+            {"use_sim_time": use_sim_time}
         ]
     )
 
@@ -97,6 +104,7 @@ def generate_launch_description():
         parameters=[
             {"autostart": True},
             {"node_names": ["collision_monitor"]},
+            {"use_sim_time": use_sim_time}
         ],
     )
 

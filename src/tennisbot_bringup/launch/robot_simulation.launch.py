@@ -9,10 +9,16 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     use_slam = LaunchConfiguration("use_slam")
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     use_slam_arg = DeclareLaunchArgument(
         "use_slam",
         default_value="false"
+    )
+
+    use_sim_time_arg = DeclareLaunchArgument(
+        "use_sim_time",
+        default_value="true"
     )
 
     gazebo = IncludeLaunchDescription(
@@ -21,6 +27,9 @@ def generate_launch_description():
             "launch",
             "gazebo.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items()
     )
     
     controller = IncludeLaunchDescription(
@@ -29,6 +38,9 @@ def generate_launch_description():
             "launch",
             "controller.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items()
     )
     
     cmd_vel_control = IncludeLaunchDescription(
@@ -38,7 +50,7 @@ def generate_launch_description():
             "cmd_vel_control.launch.py"
         ),
         launch_arguments={
-            "use_sim_time": "True"
+            "use_sim_time": use_sim_time
         }.items()
     )
 
@@ -48,6 +60,9 @@ def generate_launch_description():
             "launch",
             "global_localization.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items(),
         condition=UnlessCondition(use_slam)
     )
 
@@ -57,6 +72,9 @@ def generate_launch_description():
             "launch",
             "navigation.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items(),
         condition=UnlessCondition(use_slam)
     )
 
@@ -71,54 +89,82 @@ def generate_launch_description():
             "launch",
             "vision.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items(),
         condition=UnlessCondition(use_slam)
     )
 
 
     rviz = Node(
-            package="rviz2",
-            executable="rviz2",
-            name="rviz2",
-            output="screen",
-            arguments=["-d", os.path.join(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="screen",
+        arguments=[
+            "-d",
+            os.path.join(
                 get_package_share_directory("tennisbot_navigation"),
-                "rviz", "Path_nav2_camera.rviz")],
-            condition=UnlessCondition(use_slam)
-        )
+                "rviz",
+                "Path_nav2_camera.rviz"
+            )
+        ],
+        parameters=[
+            {"use_sim_time": use_sim_time}
+        ],
+        condition=UnlessCondition(use_slam)
+    )
 
 
     ### SLAM ###
     slam = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_mapping"),
+            "launch",
+            "slam.launch.py"
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items(),
+        condition=IfCondition(use_slam)
+    )
+
+    rviz_slam = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="screen",
+        arguments=[
+            "-d",
             os.path.join(
                 get_package_share_directory("tennisbot_mapping"),
-                "launch",
-                "slam.launch.py"
-            ),
-            condition=IfCondition(use_slam)
-        )
-    rviz_slam = Node(
-                package="rviz2",
-                executable="rviz2",
-                name="rviz2",
-                output="screen",
-                arguments=["-d", os.path.join(
-                    get_package_share_directory("tennisbot_mapping"),
-                    "rviz", "slam_camera.rviz")],
-                condition=IfCondition(use_slam)
+                "rviz",
+                "slam_camera.rviz"
             )
+        ],
+        parameters=[
+            {"use_sim_time": use_sim_time}
+        ],
+        condition=IfCondition(use_slam)
+    )
 
 
 
     
     return LaunchDescription([
         use_slam_arg,
+        use_sim_time_arg,
+
         gazebo,
         controller,
         cmd_vel_control,
+
         delayed_navigation,
-        rviz,
         localization,
+        vision_function,
+
+        rviz,
+
         slam,
         rviz_slam,
-        vision_function
     ])

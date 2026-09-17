@@ -3,7 +3,7 @@ bt_navigator:
     use_sim_time: true
     global_frame: map
     robot_base_frame: base_footprint #modify
-    odom_topic: /tennisbot_controller/odom
+    odom_topic: /diffdrive_controller/odom
     navigate_to_pose:
       path_blackboard_id: smoothed_path
     transform_tolerance: 0.3
