@@ -1,30 +1,48 @@
-# Tennisbot — ROS 2 Autonomous Patrol & Vision-Guided Navigation
+# Tennisbot — Autonomous Patrol & Vision-Guided Navigation
 
-A differential-drive robot simulation that patrols a warehouse, detects a tennis ball with an RGB camera, and switches from waypoint patrol to navigating toward the detected target.
+A ROS 2 differential-drive robot simulation that patrols a warehouse and switches to approaching a tennis ball when visual target handling is enabled.
 
-This personal project connects **robot modeling, control, mapping, localization, autonomous navigation, and computer vision** in a ROS 2 workspace. It focuses on understanding and integrating a complete robotics application in simulation.
+Built as a personal robotics project, Tennisbot connects **robot modeling → base control → sensing → localization → navigation → visual target approach**. The application combines a custom C++ patrol node with a Python/OpenCV vision node and the Nav2 navigation stack.
 
-**Platform:** ROS 2 Jazzy · Gazebo Sim · Nav2 · ros2_control · C++ · Python · OpenCV
+**ROS 2 Jazzy · Gazebo Sim · Nav2 · ros2_control · C++ · Python · OpenCV**
 
-## Demo
+## Demo: Find Ball OFF vs ON
 
-The main demonstration follows this sequence:
+Two recordings show how the robot's behavior changes in the warehouse when Find Ball is disabled or enabled. **Click either preview to open the corresponding video.**
 
-**Waypoint patrol → ball detection → patrol cancellation → target localization in the map → approach and stop.**
+| Find Ball **OFF** — continues patrol | Find Ball **ON** — detects and approaches |
+| :---: | :---: |
+| [![Find Ball disabled: the robot continues waypoint patrol](docs/demo_patrol_preview.jpg)](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Continues_waypoint_patrol.mp4) | [![Find Ball enabled: the robot detects and approaches the ball](docs/demo_approach_preview.jpg)](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Detects_and_approaches_the_ball.mp4) |
+| [▶ Watch patrol demo](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Continues_waypoint_patrol.mp4) · 51 seconds | [▶ Watch visual-approach demo](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Detects_and_approaches_the_ball.mp4) · 50 seconds |
+| The robot follows its waypoint task without switching to a ball-approach goal. | A qualifying ball detection triggers patrol cancellation and navigation toward the estimated target position. |
 
-Gazebo shows the robot and environment, RViz shows localization and navigation paths, and the OpenCV window shows the detected ball and estimated distance.
+Each recording combines three views:
 
-<!-- After recording, replace this comment with your uploaded video URL or a linked preview image. -->
+- **Camera / OpenCV:** the simulated camera image, Find Ball state, and detection/range annotations when a candidate is accepted.
+- **Gazebo:** the robot's movement in the warehouse.
+- **RViz:** the robot pose, map, costmaps, and navigation path.
 
-## Highlights
+The visual-approach workflow is:
 
-- **Robot and simulation:** URDF/Xacro differential-drive model with collision and inertial properties, Gazebo worlds, LiDAR, IMU, and RGB camera.
-- **Base control:** `gz_ros2_control`, joint state broadcaster, and a differential-drive controller with wheel odometry.
-- **Mapping and localization:** SLAM Toolbox for map creation; map server and AMCL for navigation on a saved map.
-- **Navigation:** SmacPlanner2D, SimpleSmoother, and Regulated Pure Pursuit connected through a custom behavior tree.
-- **Autonomous patrol:** a custom C++ `FollowWaypoints` client with joystick start/cancel controls and repeated patrol cycles.
-- **Visual target approach:** a Python/OpenCV node detects ball candidates, estimates their position, transforms the result into `map`, and sends a `NavigateToPose` goal.
-- **Manual control and collision monitoring:** joystick velocity commands have higher priority than navigation commands; both pass through collision monitor before reaching the base controller.
+**Patrol → detect ball → cancel patrol → transform target into map coordinates → approach → request stop near the ball.**
+
+These are simulation demonstrations of navigation and visual target approach. The project does not include a ball-collection mechanism.
+
+## Features
+
+| Area | Implementation |
+| --- | --- |
+| Robot modeling | URDF/Xacro differential-drive robot with collision and inertial properties, sensor links, and camera optical frame |
+| Simulation and base control | Gazebo Sim, `gz_ros2_control`, joint state broadcaster, differential-drive controller, and wheel odometry |
+| Sensors | LiDAR, IMU, RGB image, and CameraInfo bridged from Gazebo to ROS 2 |
+| Mapping and localization | SLAM Toolbox for map creation; map server and AMCL for localization on a saved map |
+| Navigation | SmacPlanner2D, SimpleSmoother, and Regulated Pure Pursuit connected through a custom behavior tree |
+| Patrol | Custom C++ `FollowWaypoints` client, repeated patrol cycles, joystick start/cancel, and patrol-status publication |
+| Vision and approach | Python/OpenCV HSV segmentation, contour filtering, monocular position estimation, TF transformation, and `NavigateToPose` requests |
+| Manual intervention | Joystick deadman/turbo controls and higher-priority manual velocity input through `twist_mux` |
+| Collision monitoring | Velocity-dependent stop polygons and a slowdown zone downstream of velocity arbitration |
+
+The project includes a warehouse world with a saved map and a separate house world. The recorded demos use the warehouse.
 
 ## System architecture
 
@@ -54,23 +72,25 @@ flowchart TD
     D --> G
 ```
 
-The shared velocity-control launch starts joystick teleop, `twist_mux`, and collision monitor in both mapping and navigation modes.
+The shared velocity-control launch starts joystick teleop, `twist_mux`, and collision monitor in both mapping and navigation modes. Manual velocity input has higher priority than autonomous input; taking over velocity control does not automatically cancel the navigation task.
 
-**TF chain**
+**TF ownership**
 
 ```text
-map → odom → base_footprint → base_link → camera_link → camera_optical_link
-                                      ├→ laser_link
-                                      └→ IMU_link
+map → odom                         SLAM Toolbox or AMCL
+odom → base_footprint               differential-drive controller
+base_footprint → base_link          robot_state_publisher
+base_link → wheels and sensors     robot_state_publisher
+camera_link → camera_optical_link   robot_state_publisher
 ```
 
-SLAM Toolbox or AMCL provides `map → odom`; the differential-drive controller provides `odom → base_footprint`; robot state publisher provides the robot's link transforms. IMU data is bridged into ROS 2 but is not currently fused into the odometry estimate.
+IMU data is available as a ROS topic, but the current system does not fuse it into wheel odometry.
 
-## How visual approach works
+## From camera detection to a navigation goal
 
-1. Read the camera image and intrinsics from `CameraInfo`.
-2. Apply HSV color segmentation and morphological closing; filter the largest contour by area and circularity.
-3. Estimate the ball's position using its assumed **67 mm diameter** and pixel size:
+1. Read the RGB image and camera intrinsics from `CameraInfo`.
+2. Combine HSV color masks, apply morphological closing, and check the largest contour's area and circularity.
+3. Estimate the ball's optical-frame position from its assumed **67 mm diameter** and image size:
 
    ```text
    Z = fx × ball_diameter / pixel_diameter
@@ -78,38 +98,38 @@ SLAM Toolbox or AMCL provides `map → odom`; the differential-drive controller 
    Y = (v − cy) × Z / fy
    ```
 
-4. After three consecutive qualifying detections, request patrol cancellation. The vision node uses `/patrol_status` to wait until patrol is reported inactive before sending an approach goal.
-5. Transform the observed point from `camera_optical_link` to `map` using the image timestamp, then request navigation to the estimated position.
-6. Request approach cancellation when the observed optical depth falls below **0.3 m**.
+4. After three consecutive qualifying detections, request patrol cancellation. Use `/patrol_status` to wait until patrol is reported inactive before sending an approach goal.
+5. Transform the observed point from `camera_optical_link` to `map` at the image timestamp and send a `NavigateToPose` request.
+6. Request cancellation of the approach when the observed optical depth drops below **0.3 m**.
 
-This uses classical computer vision and monocular geometry. The three-frame threshold filters brief detections; it does not implement object identity tracking across frames. The 0.3 m threshold is camera-relative optical depth, not a measured clearance from the robot's outer surface.
+The detector uses classical computer vision and known-size geometry. The three-frame threshold filters brief detections; it does not establish object identity across frames. Distance is an estimate relative to the camera, rather than a measured clearance from the robot's outer surface.
 
-## Packages
+## Repository structure
 
-| Package | Responsibility |
+| Location | Responsibility |
 | --- | --- |
-| `tennisbot_bringup` | Top-level launch and SLAM/navigation mode selection |
-| `tennisbot_description` | URDF/Xacro, Gazebo sensor plugins, worlds, assets, and RViz configurations |
-| `tennisbot_controller` | Differential-drive configuration, joystick teleop, velocity arbitration, and shared collision-monitor launch |
-| `tennisbot_mapping` | SLAM configuration and saved warehouse map |
-| `tennisbot_localization` | Map server and AMCL |
-| `tennisbot_navigation` | Nav2 configuration, custom behavior tree, and C++ patrol node |
-| `tennisbot_vision` | Ball detection, position estimation, and target-approach action client |
-
-`src/OpenCV_files/` contains standalone webcam experiments and an HSV tuning tool.
+| `src/tennisbot_bringup` | Top-level simulation launch and mode selection |
+| `src/tennisbot_description` | URDF/Xacro, sensors, Gazebo worlds/assets, and RViz configurations |
+| `src/tennisbot_controller` | Base controller, joystick configuration, mux, and shared collision-monitor launch |
+| `src/tennisbot_mapping` | SLAM configuration and saved warehouse map |
+| `src/tennisbot_localization` | Map server and AMCL |
+| `src/tennisbot_navigation` | Nav2 configuration, behavior tree, and C++ patrol node |
+| `src/tennisbot_vision` | ROS 2 Python detection and approach node |
+| `src/OpenCV_files` | Standalone webcam experiments and HSV tuner |
+| `docs` | Recorded demonstrations and preview images |
 
 ## Build and run
 
 ### Requirements
 
-- A Linux environment with ROS 2 Jazzy and compatible Gazebo Sim packages.
+- Linux with ROS 2 Jazzy and compatible Gazebo Sim packages.
 - `ros_gz_sim`, `ros_gz_bridge`, `gz_ros2_control`, `ros2_controllers`, `xacro`, robot state publisher, and RViz.
-- Nav2, including the configured Smac planner, RPP controller, smoother, waypoint follower, and collision monitor; SLAM Toolbox.
-- `joy`, `teleop_twist_joy`, and `twist_mux` with support for stamped velocity commands.
+- Nav2 with the configured Smac planner, RPP controller, smoother, waypoint follower, and collision monitor; SLAM Toolbox.
+- `joy`, `teleop_twist_joy`, and `twist_mux` with stamped-velocity support.
 - Python OpenCV, NumPy, `cv_bridge`, and ROS 2 TF libraries.
-- A gamepad and graphical desktop for the current Gazebo/RViz/OpenCV demonstration.
+- A gamepad and graphical desktop for Gazebo, RViz, and the OpenCV display.
 
-The package manifests do not yet describe every runtime dependency, so install the components above before building.
+Install these components before building; the package manifests do not yet list every runtime dependency.
 
 ### Build
 
@@ -121,13 +141,13 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-### Navigation and ball approach
+### Run the navigation demo
 
 ```bash
 ros2 launch tennisbot_bringup robot_simulation.launch.py
 ```
 
-This starts the warehouse simulation, base control, joystick/mux/collision monitor, saved map, AMCL, Nav2, patrol node, vision node, and RViz. Ball approach is initially disabled.
+The default launch starts the warehouse simulation, shared base/velocity control, saved map, AMCL, Nav2, patrol node, vision node, and RViz. **Find Ball starts disabled.** Wait for initialization and check the map alignment before starting patrol.
 
 | Gamepad button index | Function |
 | --- | --- |
@@ -135,19 +155,24 @@ This starts the warehouse simulation, base control, joystick/mux/collision monit
 | Hold `5` | Turbo manual driving |
 | Press `3` | Start/resume waypoint patrol |
 | Press `2` | Cancel patrol |
-| Press `7` | Toggle ball approach; disabling also requests cancellation of an accepted approach goal |
+| Press `7` | Toggle Find Ball; disabling requests cancellation of an accepted approach goal |
 
-Button indices are zero-based; verify them for your controller using `/joy`. The old standalone navigation-cancel node is not enabled in the current launch. Manual velocity priority does not automatically cancel an autonomous task.
+Indices are zero-based and may differ across gamepads. Verify `/joy` for your controller. Button `2` cancels patrol; the old standalone node for canceling arbitrary navigation goals is not enabled.
 
-For a demonstration, wait for initialization, start patrol, then enable ball approach. After completing an approach, disable ball approach before restarting patrol; enable it again when starting the next search. Patrol does not automatically resume after approach completion.
+**To reproduce the comparison:**
 
-### SLAM mapping
+1. Start patrol with Find Ball disabled to observe the waypoint-following behavior.
+2. During a patrol run, enable Find Ball and let a ball enter the camera's view.
+3. Observe detection annotations, the change in navigation path, and the approach.
+4. To begin another search after an approach, disable Find Ball, wait for the action to finish, restart patrol, and enable Find Ball again. Patrol resumption is currently manual.
+
+### Run SLAM mapping
 
 ```bash
 ros2 launch tennisbot_bringup robot_simulation.launch.py use_slam:=true
 ```
 
-Drive through the environment with the gamepad. This mode starts SLAM and the shared velocity-control chain, while leaving AMCL, Nav2 patrol, and the vision application disabled.
+Drive through the environment with the gamepad. Mapping mode starts SLAM and the shared velocity-control chain; AMCL, autonomous patrol, and the vision application are disabled.
 
 Save the map from another terminal with the workspace sourced:
 
@@ -155,25 +180,27 @@ Save the map from another terminal with the workspace sourced:
 ros2 run nav2_map_server map_saver_cli -f warehouse_map --ros-args -p use_sim_time:=true
 ```
 
-### Configuration entry points
+### Main configuration files
 
-| Change | File |
+| Setting | File |
 | --- | --- |
-| Patrol coordinates and buttons | `src/tennisbot_navigation/launch/navigation.launch.py` |
-| Controller and costmaps | `src/tennisbot_navigation/config/controller_server.yaml` and `planner_server.yaml` |
-| Stop/slowdown regions | `src/tennisbot_navigation/config/collision_monitor.yaml` |
-| Joystick mappings and velocity priority | `src/tennisbot_controller/config/teleop_twist_joy.yaml` and `twist_mux.yaml` |
-| Detection thresholds and approach distance | `src/tennisbot_vision/tennisbot_vision/ball_detector.py` |
-| Test-ball placement | `src/tennisbot_description/worlds/small_warehouse.world` |
+| Patrol coordinates and buttons | [navigation.launch.py](src/tennisbot_navigation/launch/navigation.launch.py) |
+| Path tracking and local costmap | [controller_server.yaml](src/tennisbot_navigation/config/controller_server.yaml) |
+| Global planning and costmap | [planner_server.yaml](src/tennisbot_navigation/config/planner_server.yaml) |
+| Navigation behavior tree | [smooth_navigation.xml](src/tennisbot_navigation/behavior_tree/smooth_navigation.xml) |
+| Collision stop/slowdown regions | [collision_monitor.yaml](src/tennisbot_navigation/config/collision_monitor.yaml) |
+| Joystick mapping / velocity priority | [teleop_twist_joy.yaml](src/tennisbot_controller/config/teleop_twist_joy.yaml) / [twist_mux.yaml](src/tennisbot_controller/config/twist_mux.yaml) |
+| Vision thresholds and approach logic | [ball_detector.py](src/tennisbot_vision/tennisbot_vision/ball_detector.py) |
+| Test-ball placement | [small_warehouse.world](src/tennisbot_description/worlds/small_warehouse.world) |
 
-## Project scope and next steps
+## Current scope and next steps
 
-This is a **simulation demonstration** of robot navigation and visual target approach. It does not include a collection mechanism or physical-robot validation. Vision is tuned for the demo environment and known ball size; multi-object tracking and automatic patrol resumption are future extensions.
+The recorded demos show the integrated patrol and visual-approach workflow in simulation. Detection is tuned for the warehouse scene and known ball size. Hardware validation, ball collection, multi-object tracking, and automatic patrol resumption are outside the current implementation.
 
-Next steps include recording the integrated demo, improving approach behavior across different ball placements, and extending the system to a physical platform.
+Further work focuses on navigation and approach tuning across different target placements, easier environment setup, and eventual deployment on a physical robot.
 
 ## Author
 
 Will Hsu — [GitHub](https://github.com/Will0103)
 
-Built with ROS 2, Gazebo, Nav2, ros2_control, SLAM Toolbox, and OpenCV. The custom application code connects these tools into the patrol and visual-approach workflow.
+Built with ROS 2, Gazebo, Nav2, ros2_control, SLAM Toolbox, and OpenCV. The project's custom C++ and Python nodes connect these tools into an autonomous patrol and visual-target application.
