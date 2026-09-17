@@ -53,7 +53,8 @@ class BallDetectorNode(Node):
 
         #Gotoball button
         self.enable_gotoball_sub = self.create_subscription(Joy, "joy", self.enable_gotoball_callback, 10)
-        self.enable_gotoball_button = 7
+        self.declare_parameter("enable_button", 7)
+        self.enable_gotoball_button = self.get_parameter("enable_button").value
         self.enable_gotoball = False
         self.previous_gotoball_button = False
         

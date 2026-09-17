@@ -65,7 +65,14 @@ def generate_launch_description():
         actions=[navigation]
     )
 
-    
+    vision_function = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_vision"),
+            "launch",
+            "vision.launch.py"
+        ),
+    )
+
 
     rviz = Node(
             package="rviz2",
@@ -112,4 +119,5 @@ def generate_launch_description():
         localization,
         slam,
         rviz_slam,
+        vision_function
     ])
