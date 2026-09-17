@@ -209,7 +209,7 @@ ros2 run nav2_map_server map_saver_cli -f warehouse_map --ros-args -p use_sim_ti
 
 The recorded demos show the integrated patrol and visual-approach workflow in simulation. Detection is tuned for the warehouse scene and known ball size. Hardware validation, ball collection, multi-object tracking, and automatic patrol resumption are outside the current implementation.
 
-Further work focuses on navigation and approach tuning across different target placements, easier environment setup, and eventual deployment on a physical robot.
+The next milestone is to reproduce the current simulation workflow on a physical robot: map a home environment using SLAM, patrol autonomously, and detect and approach tennis balls. The long-term goal is autonomous tennis ball collection, with the pickup mechanism planned for a later stage.
 
 ## Author
 
