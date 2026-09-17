@@ -78,8 +78,13 @@ def generate_launch_description():
         condition=UnlessCondition(use_slam)
     )
 
+    delayed_localization = TimerAction(
+        period=5.0,
+        actions=[localization]
+    )
+
     delayed_navigation = TimerAction(
-        period=2.0,
+        period=7.0,
         actions=[navigation]
     )
 
@@ -160,7 +165,7 @@ def generate_launch_description():
         cmd_vel_control,
 
         delayed_navigation,
-        localization,
+        delayed_localization,
         vision_function,
 
         rviz,
