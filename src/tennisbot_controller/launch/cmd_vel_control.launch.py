@@ -8,13 +8,20 @@ from launch.substitutions import LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch_ros.actions import Node
 
-
 def generate_launch_description():
     
     # tennisbot_controller_pkg = get_package_share_directory('tennisbot_controller')
 
     use_sim_time_arg = DeclareLaunchArgument(name="use_sim_time", default_value="True",
                                       description="Use simulated time"
+    )
+
+    pkg_share = get_package_share_directory("tennisbot_navigation")
+
+    collision_monitor_config = os.path.join(
+        pkg_share,
+        "config",
+        "collision_monitor.yaml"
     )
 
     # joy_teleop = Node(
@@ -71,6 +78,29 @@ def generate_launch_description():
         ]
     )
 
+    collision_monitor = Node(
+        package="nav2_collision_monitor",
+        executable="collision_monitor",
+        name="collision_monitor",
+        output="screen",
+        parameters=[
+            collision_monitor_config,
+            {"use_sim_time": LaunchConfiguration("use_sim_time")}
+        ]
+    )
+
+    collision_monitor_lifecycle_manager = Node(
+        package="nav2_lifecycle_manager",
+        executable="lifecycle_manager",
+        name="lifecycle_manager_collision_monitor",
+        output="screen",
+        parameters=[
+            {"autostart": True},
+            {"node_names": ["collision_monitor"]},
+        ],
+    )
+
+    ## Cancel NavigateToPose action
     # joystick_function = Node(
     #         package="tennisbot_controller",
     #         executable="joystick_function",
@@ -88,5 +118,7 @@ def generate_launch_description():
             joy_node,
             twist_mux,
             # joystick_function,
+            collision_monitor,
+            collision_monitor_lifecycle_manager,
         ]
     )

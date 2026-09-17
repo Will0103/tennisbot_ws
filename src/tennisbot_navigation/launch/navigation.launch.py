@@ -11,8 +11,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time")
-    # lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "behavior_server"]
-    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "collision_monitor", "waypoint_follower"]
+    lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "waypoint_follower"]
     tennisbot_navigation_pkg = get_package_share_directory("tennisbot_navigation")
 
     use_sim_time_arg = DeclareLaunchArgument(
@@ -49,20 +48,6 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time}
         ],
     )
-
-    # nav2_behaviors = Node(
-    #     package="nav2_behaviors",
-    #     executable="behavior_server",
-    #     name="behavior_server",
-    #     output="screen",
-    #     parameters=[
-    #         os.path.join(
-    #             tennisbot_navigation_pkg,
-    #             "config",
-    #             "behavior_server.yaml"),
-    #         {"use_sim_time": use_sim_time}
-    #     ],
-    # )
     
     nav2_bt_navigator = Node(
         package="nav2_bt_navigator",
@@ -92,21 +77,6 @@ def generate_launch_description():
         ],
     )
 
-    collision_monitor = Node(
-        package="nav2_collision_monitor",
-        executable="collision_monitor",
-        name="collision_monitor",
-        output="screen",
-        parameters=[
-            os.path.join(
-                get_package_share_directory("tennisbot_navigation"),
-                "config",
-                "collision_monitor.yaml"
-            ),
-            {"use_sim_time": use_sim_time}
-        ]
-    )
-
     waypoint_follower = Node(
         package="nav2_waypoint_follower",
         executable="waypoint_follower",
@@ -121,7 +91,6 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time}
         ]
     )
-
     
 
     nav2_lifecycle_manager = Node(
@@ -153,10 +122,8 @@ def generate_launch_description():
         nav2_controller_server,
         nav2_planner_server,
         nav2_smoother_server,
-        # nav2_behaviors,
         nav2_bt_navigator,
         nav2_lifecycle_manager,
-        collision_monitor,
         waypoint_follower,
         patrol_nodes,
     ])

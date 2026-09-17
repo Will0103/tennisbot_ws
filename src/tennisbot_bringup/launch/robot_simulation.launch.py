@@ -31,11 +31,11 @@ def generate_launch_description():
         ),
     )
     
-    joystick = IncludeLaunchDescription(
+    cmd_vel_control = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("tennisbot_controller"),
             "launch",
-            "joystick_teleop.launch.py"
+            "cmd_vel_control.launch.py"
         ),
         launch_arguments={
             "use_sim_time": "True"
@@ -71,6 +71,7 @@ def generate_launch_description():
             "launch",
             "vision.launch.py"
         ),
+        condition=UnlessCondition(use_slam)
     )
 
 
@@ -102,7 +103,7 @@ def generate_launch_description():
                 output="screen",
                 arguments=["-d", os.path.join(
                     get_package_share_directory("tennisbot_mapping"),
-                    "rviz", "slam.rviz")],
+                    "rviz", "slam_camera.rviz")],
                 condition=IfCondition(use_slam)
             )
 
@@ -113,7 +114,7 @@ def generate_launch_description():
         use_slam_arg,
         gazebo,
         controller,
-        joystick,
+        cmd_vel_control,
         delayed_navigation,
         rviz,
         localization,
