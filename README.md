@@ -8,13 +8,14 @@ Built as a personal robotics project, Tennisbot connects **robot modeling → ba
 
 ## Demo: Find Ball OFF vs ON
 
-Two recordings show how the robot's behavior changes in the warehouse when Find Ball is disabled or enabled. **Click either preview to open the corresponding video.**
+The animations below compare waypoint patrol with Find Ball disabled and enabled.
 
 | Find Ball **OFF** — continues patrol | Find Ball **ON** — detects and approaches |
 | :---: | :---: |
-| [![Find Ball disabled: the robot continues waypoint patrol](docs/demo_patrol_preview.jpg)](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Continues_waypoint_patrol.mp4) | [![Find Ball enabled: the robot detects and approaches the ball](docs/demo_approach_preview.jpg)](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Detects_and_approaches_the_ball.mp4) |
-| [▶ Watch patrol demo](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Continues_waypoint_patrol.mp4) · 51 seconds | [▶ Watch visual-approach demo](https://github.com/Will0103/tennisbot_ws/blob/master/docs/Detects_and_approaches_the_ball.mp4) · 50 seconds |
-| The robot follows its waypoint task without switching to a ball-approach goal. | A qualifying ball detection triggers patrol cancellation and navigation toward the estimated target position. |
+| ![Find Ball disabled: the robot continues waypoint patrol](docs/Continues_waypoint_patrol_GIF.gif) | ![Find Ball enabled: the robot detects and approaches the ball](docs/Detects_and_approaches_the_ball_GIF.gif) |
+| The robot continues its waypoint task without switching to a ball-approach goal. | A qualifying ball detection triggers patrol cancellation and navigation toward the estimated target position. |
+
+Full recordings (MP4): [Download patrol demo](https://github.com/Will0103/tennisbot_ws/raw/refs/heads/master/docs/Continues_waypoint_patrol.mp4) · [Download visual-approach demo](https://github.com/Will0103/tennisbot_ws/raw/refs/heads/master/docs/Detects_and_approaches_the_ball.mp4).
 
 Each recording combines three views:
 
@@ -116,7 +117,7 @@ The detector uses classical computer vision and known-size geometry. The three-f
 | `src/tennisbot_navigation` | Nav2 configuration, behavior tree, and C++ patrol node |
 | `src/tennisbot_vision` | ROS 2 Python detection and approach node |
 | `src/OpenCV_files` | Standalone webcam experiments and HSV tuner |
-| `docs` | Recorded demonstrations and preview images |
+| `docs` | Animated demo comparisons and full MP4 recordings |
 
 ## Build and run
 
