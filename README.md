@@ -10,10 +10,21 @@ Built as a personal robotics project, Tennisbot connects **robot modeling → ba
 
 The animations below compare waypoint patrol with Find Ball disabled and enabled.
 
-| Find Ball **OFF** — continues patrol | Find Ball **ON** — detects and approaches |
-| :---: | :---: |
-| ![Find Ball disabled: the robot continues waypoint patrol](docs/Continues_waypoint_patrol_GIF.gif) | ![Find Ball enabled: the robot detects and approaches the ball](docs/Detects_and_approaches_the_ball_GIF.gif) |
-| The robot continues its waypoint task without switching to a ball-approach goal. | A qualifying ball detection triggers patrol cancellation and navigation toward the estimated target position. |
+### Find Ball OFF — continues patrol
+
+The robot continues its waypoint task without switching to a ball-approach goal.
+
+<p align="center">
+  <img src="docs/Continues_waypoint_patrol_GIF.gif" alt="Find Ball disabled: the robot continues waypoint patrol" width="640">
+</p>
+
+### Find Ball ON — detects and approaches
+
+A qualifying ball detection triggers patrol cancellation and navigation toward the estimated target position.
+
+<p align="center">
+  <img src="docs/Detects_and_approaches_the_ball_GIF.gif" alt="Find Ball enabled: the robot detects and approaches the ball" width="640">
+</p>
 
 Full recordings (MP4): [Download patrol demo](https://github.com/Will0103/tennisbot_ws/raw/refs/heads/master/docs/Continues_waypoint_patrol.mp4) · [Download visual-approach demo](https://github.com/Will0103/tennisbot_ws/raw/refs/heads/master/docs/Detects_and_approaches_the_ball.mp4).
 
