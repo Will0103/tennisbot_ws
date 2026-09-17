@@ -14,6 +14,19 @@ def generate_launch_description():
     lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "waypoint_follower"]
     tennisbot_navigation_pkg = get_package_share_directory("tennisbot_navigation")
 
+    # Absolute path
+    navigate_to_pose_bt = os.path.join(
+        tennisbot_navigation_pkg,
+        "behavior_tree",
+        "smooth_navigation.xml"
+    )
+    navigate_through_poses_bt = os.path.join(
+        tennisbot_navigation_pkg,
+        "behavior_tree",
+        "smooth_navigation.xml"
+    )
+
+
     use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time",
         default_value="true"
@@ -58,8 +71,13 @@ def generate_launch_description():
             os.path.join(
                 tennisbot_navigation_pkg,
                 "config",
-                "bt_navigator.yaml"),
-            {"use_sim_time": use_sim_time}
+                "bt_navigator.yaml"
+            ),
+            {
+                "use_sim_time": use_sim_time,
+                "default_nav_to_pose_bt_xml": navigate_to_pose_bt,
+                "default_nav_through_poses_bt_xml": navigate_through_poses_bt,
+            }
         ],
     )
 
