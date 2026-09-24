@@ -1,0 +1,10 @@
+<library path="tennisbot_firmware">
+    <class name="tennisbot_firmware/TennisbotInterface"
+      type="tennisbot_firmware::TennisbotInterface"
+      base_class_type="hardware_interface::SystemInterface"
+    >
+      <description>
+        Tennisbot Hardware Interface
+      </description>
+    </class>
+  </library>
