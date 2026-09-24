@@ -2,6 +2,8 @@
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <pluginlib/class_list_macros.hpp>
 
+#include <algorithm>
+
 
 namespace tennisbot_firmware
 {
@@ -45,9 +47,9 @@ CallbackReturn TennisbotInterface::on_init(const hardware_interface::HardwareInf
     return CallbackReturn::FAILURE;
   }
 
-  velocity_commands_.reserve(info_.joints.size());
-  position_states_.reserve(info_.joints.size());
-  velocity_states_.reserve(info_.joints.size());
+  velocity_commands_.resize(info_.joints.size(), 0.0);
+  position_states_.resize(info_.joints.size(), 0.0);
+  velocity_states_.resize(info_.joints.size(), 0.0);
   last_run_ = rclcpp::Clock().now();
 
   return CallbackReturn::SUCCESS;
@@ -91,10 +93,10 @@ CallbackReturn TennisbotInterface::on_activate(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(rclcpp::get_logger("TennisbotInterface"), "Starting robot hardware ...");
 
   // Reset commands and states
-  velocity_commands_ = { 0.0, 0.0 };
-  position_states_ = { 0.0, 0.0 };
-  velocity_states_ = { 0.0, 0.0 };
-
+  std::fill(velocity_commands_.begin(), velocity_commands_.end(), 0.0);
+  std::fill(position_states_.begin(), position_states_.end(), 0.0);
+  std::fill(velocity_states_.begin(), velocity_states_.end(), 0.0);
+  
   try
   {
     arduino_.Open(port_);
@@ -107,6 +109,8 @@ CallbackReturn TennisbotInterface::on_activate(const rclcpp_lifecycle::State &)
     return CallbackReturn::FAILURE;
   }
 
+  last_run_ = rclcpp::Clock().now();
+  
   RCLCPP_INFO(rclcpp::get_logger("TennisbotInterface"),
               "Hardware started, ready to take commands");
   return CallbackReturn::SUCCESS;
