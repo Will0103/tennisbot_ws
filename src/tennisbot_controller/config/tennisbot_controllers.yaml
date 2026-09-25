@@ -19,7 +19,7 @@ diffdrive_controller:
     pose_covariance_diagonal : [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
     twist_covariance_diagonal: [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
 
-    wheel_separation : 0.238
+    wheel_separation : 0.2212
     wheel_radius : 0.0315
 
     wheel_separation_multiplier: 1.0
