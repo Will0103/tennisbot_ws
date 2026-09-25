@@ -12,11 +12,12 @@
 
 <!-- robot descirption -->
 
-    <xacro:property name="base_length" value="0.3" />
-    <xacro:property name="base_width" value="0.21" />
-    <xacro:property name="base_height" value="0.1" />
-    <xacro:property name="wheel_radius" value="0.0325" />
+    <xacro:property name="base_length" value="0.25" />
+    <xacro:property name="base_width" value="0.18" />
+    <xacro:property name="base_height" value="0.068" />
+    <xacro:property name="wheel_radius" value="0.0315" />
     <xacro:property name="wheel_length" value="0.026" />
+    <xacro:property name="wheel_seperation" value="0.238" />
 
 
 
@@ -66,7 +67,8 @@
     <joint name="base_leftwheel_joint" type="continuous">
         <parent link="base_link" />
         <child link="left_wheel_link" />
-        <origin xyz="${-(base_length / 4.0)} ${(base_width / 2.0) + (wheel_length / 2.0)} 0" rpy="0 0 0" />
+        <!-- <origin xyz="${-(base_length / 4.0)} ${(base_width / 2.0) + (wheel_length / 2.0)} 0" rpy="0 0 0" /> -->
+        <origin xyz="${-(base_length / 4.0)} ${(wheel_seperation / 2.0)} 0" rpy="0 0 0" />
         <axis xyz="0 1 0" />
     </joint>
 
@@ -90,7 +92,8 @@
     <joint name="base_rightwheel_joint" type="continuous">
         <parent link="base_link" />
         <child link="right_wheel_link" />
-        <origin xyz="${-(base_length / 4.0)} ${-(base_width / 2.0) - (wheel_length / 2.0)} 0" rpy="0 0 0" />
+        <!-- <origin xyz="${-(base_length / 4.0)} ${-(base_width / 2.0) - (wheel_length / 2.0)} 0" rpy="0 0 0" /> -->
+        <origin xyz="${-(base_length / 4.0)} ${-(wheel_seperation / 2.0)} 0" rpy="0 0 0" />
         <axis xyz="0 1 0" />
     </joint>
 
