@@ -165,6 +165,6 @@ def generate_launch_description():
 
         laser_driver,
         # localization,
-        # slam,
+        slam,
         # navigation,
     ])
