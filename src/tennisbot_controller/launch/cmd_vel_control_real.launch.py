@@ -35,7 +35,7 @@ def generate_launch_description():
             os.path.join(
                 get_package_share_directory("tennisbot_controller"),
                 "config",
-                "teleop_twist_joy.yaml"
+                "teleop_twist_joy_real.yaml"
             ),
             {"use_sim_time": use_sim_time}
         ],

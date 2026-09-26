@@ -54,6 +54,14 @@ def generate_launch_description():
         }.items()
     )
 
+    ekf = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_localization"),
+            "launch",
+            "ekf_real.launch.py"
+        )
+    )
+
     localization = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("tennisbot_localization"),
@@ -163,6 +171,8 @@ def generate_launch_description():
         gazebo,
         controller,
         cmd_vel_control,
+
+        ekf,
 
         delayed_navigation,
         delayed_localization,

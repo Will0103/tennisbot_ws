@@ -100,6 +100,16 @@ def generate_launch_description():
         }.items(),
     )
 
+    ekf = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_localization"),
+            "launch",
+            "ekf_real.launch.py"
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items(),
+    )
 
     # =========================
     # Localization
@@ -162,6 +172,8 @@ def generate_launch_description():
         hardware_interface,
         controller,
         cmd_vel_control,
+
+        ekf,
 
         laser_driver,
         # localization,
