@@ -67,8 +67,8 @@ collision_monitor:
       forward:
         points: "[[0.20, 0.15],
                   [0.20, -0.15],
-                  [-0.10, -0.15],
-                  [-0.10, 0.15]]"
+                  [-0.0, -0.15],
+                  [-0.0, 0.15]]"
 
         linear_min: 0.0
         linear_max: 0.5
@@ -81,8 +81,8 @@ collision_monitor:
       # 往後
       # -------------------------
       backward:
-        points: "[[0.10, 0.15],
-                  [0.10, -0.15],
+        points: "[[0.0, 0.15],
+                  [0.0, -0.15],
                   [-0.15, -0.15],
                   [-0.15, 0.15]]"
 
@@ -115,7 +115,7 @@ collision_monitor:
     # ==================================================
     SlowZone:
       type: "circle"
-      radius: 0.40
+      radius: 0.35
 
       action_type: "slowdown"
       min_points: 4
