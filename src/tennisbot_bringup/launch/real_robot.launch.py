@@ -52,9 +52,10 @@ def generate_launch_description():
     # =========================
 
     laser_driver = Node(
-        package="rplidar_ros",
-        executable="rplidar_node",
-        name="rplidar_node",
+        name='rplidar_composition',
+        package='rplidar_ros',
+        executable='rplidar_composition',
+        output='screen',
         parameters=[
             os.path.join(
                 get_package_share_directory("tennisbot_bringup"),
@@ -65,7 +66,6 @@ def generate_launch_description():
                 "use_sim_time": use_sim_time
             }
         ],
-        output="screen"
     )
 
 
@@ -163,8 +163,7 @@ def generate_launch_description():
         controller,
         cmd_vel_control,
 
-        # Enable these later
-        # laser_driver,
+        laser_driver,
         # localization,
         # slam,
         # navigation,
