@@ -40,8 +40,8 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time}
         ],
         remappings=[
-            # ("/cmd_vel", "/cmd_vel_joy")
-            ("/cmd_vel", "/diffdrive_controller/cmd_vel") ##TEMP
+            ("/cmd_vel", "/cmd_vel_joy")
+            # ("/cmd_vel", "/diffdrive_controller/cmd_vel") ##TEMP
         ]
     )
 
@@ -111,8 +111,8 @@ def generate_launch_description():
             use_sim_time_arg,
             joy_teleop,
             joy_node,
-            # twist_mux,
-            # collision_monitor,
-            # collision_monitor_lifecycle_manager,
+            twist_mux,
+            collision_monitor,
+            collision_monitor_lifecycle_manager,
         ]
     )
