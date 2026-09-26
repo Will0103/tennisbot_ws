@@ -83,8 +83,8 @@ collision_monitor:
       backward:
         points: "[[0.0, 0.15],
                   [0.0, -0.15],
-                  [-0.15, -0.15],
-                  [-0.15, 0.15]]"
+                  [-0.18, -0.15],
+                  [-0.18, 0.15]]"
 
         linear_min: -0.5
         linear_max: 0.0
@@ -116,13 +116,13 @@ collision_monitor:
     SlowZone:
       type: "polygon"
 
-      points: "[[0.30, 0.20],
-                [0.30, -0.20],
-                [-0.20, -0.20],
-                [-0.20, 0.20]]"
+      points: "[[0.35, 0.20],
+                [0.35, -0.20],
+                [-0.30, -0.20],
+                [-0.30, 0.20]]"
 
       action_type: "slowdown"
-      min_points: 4
+      min_points: 2
 
       slowdown_ratio: 0.4
 
