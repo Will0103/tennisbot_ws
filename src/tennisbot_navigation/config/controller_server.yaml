@@ -68,10 +68,10 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.03
-      footprint: "[[0.17, 0.15],
-                  [0.17, -0.15],
-                  [-0.14, -0.15],
-                  [-0.14, 0.15]]"
+      footprint: "[[0.17, 0.135],
+                  [0.17, -0.135],
+                  [-0.14, -0.135],
+                  [-0.14, 0.135]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
