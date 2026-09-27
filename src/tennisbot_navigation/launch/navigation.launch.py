@@ -135,18 +135,7 @@ def generate_launch_description():
         ],
     )
 
-    patrol_nodes = Node(
-        package="tennisbot_navigation",
-        executable="patrol_nodes",
-        name="patrol_nodes",
-        parameters=[
-            {"use_sim_time": use_sim_time},
-            {"cancel_button": 2},
-            {"start_button": 3},
-            {"waypoints_x": [1.0, 1.0, -3.5, -3.5]},
-            {"waypoints_y": [0.0, 4.0, 4.0, 0.0]},
-        ],
-    )
+    
 
     return LaunchDescription([
         use_sim_time_arg,
@@ -156,5 +145,4 @@ def generate_launch_description():
         nav2_bt_navigator,
         nav2_lifecycle_manager,
         waypoint_follower,
-        patrol_nodes,
     ])

@@ -128,6 +128,20 @@ def generate_launch_description():
         condition=UnlessCondition(use_slam)
     )
 
+    patrol_nodes = Node(
+        package="tennisbot_navigation",
+        executable="patrol_nodes",
+        name="patrol_nodes",
+        parameters=[
+            {"use_sim_time": use_sim_time},
+            {"cancel_button": 1},
+            {"start_button": 3},
+            {"waypoints_x": [-1.0, -3.1, -4.0, -5.0, -5.0, -4.2, -2.6, -1.4, 0.0]},
+            {"waypoints_y": [1.3, 1.5, 1.5, 1.0, 0.0, -0.9, -0.9, -4.4, 0.0]},
+        ],
+        condition=UnlessCondition(use_slam)
+    )
+
     return LaunchDescription([
         use_slam_arg,
         use_sim_time_arg,
@@ -142,4 +156,6 @@ def generate_launch_description():
         localization,
         slam,
         navigation,
+
+        patrol_nodes,
     ])
