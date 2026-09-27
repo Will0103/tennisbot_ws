@@ -58,7 +58,7 @@ def generate_launch_description():
         os.path.join(
             get_package_share_directory("tennisbot_localization"),
             "launch",
-            "ekf_real.launch.py"
+            "ekf.launch.py"
         )
     )
 
