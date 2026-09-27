@@ -14,26 +14,16 @@ def generate_launch_description():
     use_slam = LaunchConfiguration("use_slam")
     use_sim_time = LaunchConfiguration("use_sim_time")
 
-
-    # =========================
-    # Launch Arguments
-    # =========================
-
     use_slam_arg = DeclareLaunchArgument(
         "use_slam",
         default_value="false"
     )
 
-    # Real robot MUST use system time
     use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time",
         default_value="false"
     )
 
-
-    # =========================
-    # Hardware Interface
-    # =========================
 
     hardware_interface = IncludeLaunchDescription(
         os.path.join(
@@ -45,11 +35,6 @@ def generate_launch_description():
             "use_sim_time": use_sim_time
         }.items(),
     )
-
-
-    # =========================
-    # LiDAR
-    # =========================
 
     laser_driver = Node(
         name='rplidar_composition',
@@ -68,11 +53,6 @@ def generate_launch_description():
         ],
     )
 
-
-    # =========================
-    # ros2_control Controllers
-    # =========================
-
     controller = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("tennisbot_controller"),
@@ -83,11 +63,6 @@ def generate_launch_description():
             "use_sim_time": use_sim_time
         }.items(),
     )
-
-
-    # =========================
-    # Joystick
-    # =========================
 
     cmd_vel_control = IncludeLaunchDescription(
         os.path.join(
@@ -111,9 +86,6 @@ def generate_launch_description():
         }.items(),
     )
 
-    # =========================
-    # Localization
-    # =========================
 
     localization = IncludeLaunchDescription(
         os.path.join(
@@ -122,11 +94,11 @@ def generate_launch_description():
             "global_localization.launch.py"
         ),
         launch_arguments={
-            "use_sim_time": use_sim_time
+            "use_sim_time": use_sim_time,
+            "map_name": "will_home"
         }.items(),
         condition=UnlessCondition(use_slam)
     )
-
 
     # =========================
     # SLAM
@@ -144,11 +116,6 @@ def generate_launch_description():
         condition=IfCondition(use_slam)
     )
 
-
-    # =========================
-    # Navigation
-    # =========================
-
     navigation = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("tennisbot_navigation"),
@@ -158,12 +125,8 @@ def generate_launch_description():
         launch_arguments={
             "use_sim_time": use_sim_time
         }.items(),
+        condition=UnlessCondition(use_slam)
     )
-
-
-    # =========================
-    # Launch
-    # =========================
 
     return LaunchDescription([
         use_slam_arg,
@@ -176,7 +139,7 @@ def generate_launch_description():
         ekf,
 
         laser_driver,
-        # localization,
+        localization,
         slam,
-        # navigation,
+        navigation,
     ])
