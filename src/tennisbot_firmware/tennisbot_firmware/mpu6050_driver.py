@@ -63,7 +63,8 @@ class MPU6050_Driver(Node):
             self.imu_msg_.linear_acceleration.y = acc_y_ms2
             self.imu_msg_.linear_acceleration.z = (acc_z_ms2 - Z_ACCEL_BIAS) * Z_ACCEL_CORRECTION
 
-            GYRO_SCALE = 7509.55
+            GYRO_SCALE = 131.0 * 180.0 / 3.141592653589793
+
             self.imu_msg_.angular_velocity.x = gyro_x / GYRO_SCALE
             self.imu_msg_.angular_velocity.y = gyro_y / GYRO_SCALE
             self.imu_msg_.angular_velocity.z = gyro_z / GYRO_SCALE
@@ -79,7 +80,7 @@ class MPU6050_Driver(Node):
             self.bus_.write_byte_data(DEVICE_ADDRESS, SMPLRT_DIV, 7)
             self.bus_.write_byte_data(DEVICE_ADDRESS, PWR_MGMT_1, 1)
             self.bus_.write_byte_data(DEVICE_ADDRESS, CONFIG, 0)
-            self.bus_.write_byte_data(DEVICE_ADDRESS, GYRO_CONFIG, 24)
+            self.bus_.write_byte_data(DEVICE_ADDRESS, GYRO_CONFIG, 0)
             self.bus_.write_byte_data(DEVICE_ADDRESS, ACCEL_CONFIG, 0)
             self.bus_.write_byte_data(DEVICE_ADDRESS, INT_ENABLE, 1)
             
