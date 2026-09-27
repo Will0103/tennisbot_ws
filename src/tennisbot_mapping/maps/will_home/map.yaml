@@ -1,4 +1,4 @@
-image: willhome_map.pgm
+image: map.pgm
 mode: trinary
 resolution: 0.020
 origin: [-5.765, -5.241, 0]
