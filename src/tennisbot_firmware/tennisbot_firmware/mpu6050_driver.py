@@ -67,7 +67,10 @@ class MPU6050_Driver(Node):
 
             self.imu_msg_.angular_velocity.x = gyro_x / GYRO_SCALE
             self.imu_msg_.angular_velocity.y = gyro_y / GYRO_SCALE
-            self.imu_msg_.angular_velocity.z = gyro_z / GYRO_SCALE
+
+            GYRO_Z_BIAS = -0.027
+            self.imu_msg_.angular_velocity.z = gyro_z / GYRO_SCALE - GYRO_Z_BIAS
+
 
             self.imu_msg_.header.stamp = self.get_clock().now().to_msg()
             self.imu_pub_.publish(self.imu_msg_)
