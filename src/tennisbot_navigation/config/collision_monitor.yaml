@@ -122,9 +122,9 @@ collision_monitor:
                 [-0.30, 0.17]]"
 
       action_type: "slowdown"
-      min_points: 2
+      min_points: 3
 
-      slowdown_ratio: 0.4
+      slowdown_ratio: 0.7
 
       visualize: true
       polygon_pub_topic: "/collision_monitor/slow_zone"
