@@ -34,7 +34,7 @@ controller_server:
       min_lookahead_dist: 0.2
       max_lookahead_dist: 0.6
       lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 1.5
+      rotate_to_heading_angular_vel: 1.8
       transform_tolerance: 0.2
       use_velocity_scaled_lookahead_dist: false
       min_approach_linear_velocity: 0.05
@@ -43,8 +43,8 @@ controller_server:
       max_allowed_time_to_collision_up_to_carrot: 1.0
       use_regulated_linear_velocity_scaling: true
       use_cost_regulated_linear_velocity_scaling: true
-      regulated_linear_scaling_min_radius: 0.9
-      regulated_linear_scaling_min_speed: 0.1
+      regulated_linear_scaling_min_radius: 0.5
+      regulated_linear_scaling_min_speed: 0.2
       use_fixed_curvature_lookahead: false
       curvature_lookahead_dist: 1.0
       use_rotate_to_heading: true
