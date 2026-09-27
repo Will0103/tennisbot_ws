@@ -116,10 +116,10 @@ collision_monitor:
     SlowZone:
       type: "polygon"
 
-      points: "[[0.40, 0.20],
-                [0.40, -0.20],
-                [-0.30, -0.20],
-                [-0.30, 0.20]]"
+      points: "[[0.40, 0.17],
+                [0.40, -0.17],
+                [-0.30, -0.17],
+                [-0.30, 0.17]]"
 
       action_type: "slowdown"
       min_points: 2
