@@ -26,15 +26,7 @@ class MPU6050_Driver(Node):
     def __init__(self):
         super().__init__("mpu6050_driver")
         
-        # MPU6050 沒有提供可靠的 absolute orientation
-        self.imu_msg_.orientation_covariance[0] = -1.0
-
-        # Gyroscope covariance
-        self.imu_msg_.angular_velocity_covariance = [
-            0.01, 0.0,  0.0,
-            0.0,  0.01, 0.0,
-            0.0,  0.0,  0.01
-        ]
+        
                 
         # I2C Interafce
         self.is_connected_ = False
@@ -44,6 +36,17 @@ class MPU6050_Driver(Node):
         self.imu_pub_ = self.create_publisher(Imu, "/imu/out", qos_profile=qos_profile_sensor_data)
         self.imu_msg_ = Imu()
         self.imu_msg_.header.frame_id = "IMU_link"
+
+        # MPU6050 沒有提供可靠的 absolute orientation
+        self.imu_msg_.orientation_covariance[0] = -1.0
+
+        # Gyroscope covariance
+        self.imu_msg_.angular_velocity_covariance = [
+            0.01, 0.0,  0.0,
+            0.0,  0.01, 0.0,
+            0.0,  0.0,  0.01
+        ]
+
         self.frequency_ = 0.01
         self.timer_ = self.create_timer(self.frequency_, self.timerCallback)
 

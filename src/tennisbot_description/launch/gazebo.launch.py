@@ -100,9 +100,9 @@ def generate_launch_description():
             "/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image",
             "/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
         ],
-        # remappings=[
-        #     ('/imu', '/imu/out'),
-        # ]
+        remappings=[
+            ('/imu', '/imu/out'),
+        ]
     )
 
     return LaunchDescription([

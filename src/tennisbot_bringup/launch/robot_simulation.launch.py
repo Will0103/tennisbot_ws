@@ -59,7 +59,10 @@ def generate_launch_description():
             get_package_share_directory("tennisbot_localization"),
             "launch",
             "ekf.launch.py"
-        )
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items()
     )
 
     localization = IncludeLaunchDescription(
