@@ -268,7 +268,7 @@ Not in scope yet: ball collection, multi-object tracking, and tracking object id
 - The robot base design, `ros2_control` hardware interface, Arduino motor-control firmware, and MPU6050 driver started from the Bumperbot examples in Antonio Brandi's Udemy course *Self Driving and ROS 2 – Learn by Doing!*. I adapted them to this robot's hardware (wheel geometry, encoder calibration, serial devices).
 - Built on top of that base: the patrol node, the OpenCV ball-detection and approach node, the Nav2 / collision-monitor / EKF configuration and tuning, the home map, and the RPLidar A1 integration.
 - Gazebo worlds and furniture models: [AWS RoboMaker Small House World](https://github.com/aws-robotics/aws-robomaker-small-house-world) and [Small Warehouse World](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world).
-- 
+  
 ## Author
 
 Will Hsu — [GitHub](https://github.com/Will0103)
