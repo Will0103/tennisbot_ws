@@ -20,11 +20,11 @@ The project covers the full robotics stack: **robot modeling → embedded motor 
 
 ### Physical robot — autonomous waypoint patrol at home
 
-The robot runs autonomous waypoint patrol on a SLAM map of a home environment. No joystick input is used during the clip.
+The robot runs autonomous waypoint patrol on a SLAM map of a home environment, with no joystick input. The left clip shows the robot at real speed; the right clip is an RViz recording of a separate patrol run at 5× speed, showing the map, laser scan, AMCL particle cloud, and costmaps as the robot moves.
 
-<p align="center">
-  <img src="docs/Real_robot_patrol_GIF.gif" alt="Physical Tennisbot patrolling autonomously at home" width="640">
-</p>
+| Robot (real speed) | RViz (5× speed) |
+| --- | --- |
+| <img src="docs/Real_robot_patrol_GIF.gif" alt="Physical Tennisbot patrolling autonomously at home" width="420"> | <img src="docs/Real_robot_rviz_GIF.gif" alt="RViz view of the physical robot patrolling on the home map" width="380"> |
 
 ### Simulation — Find Ball OFF vs ON
 
