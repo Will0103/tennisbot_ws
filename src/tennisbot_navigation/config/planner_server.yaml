@@ -31,6 +31,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_footprint #modify
       use_sim_time: true
+      footprint_padding: 0.03
       footprint: "[[0.17, 0.135],
                   [0.17, -0.135],
                   [-0.14, -0.135],
