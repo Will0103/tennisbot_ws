@@ -84,7 +84,7 @@ class MPU6050_Driver(Node):
             GYRO_Z_BIAS = -0.027
             wz = gyro_z / GYRO_SCALE - GYRO_Z_BIAS
             self.imu_msg_.angular_velocity.z = (0.0 if abs(wz) < 0.01 else wz)
-            # add dead zone
+            # add dead zone 2
 
 
             self.imu_msg_.header.stamp = self.get_clock().now().to_msg()
