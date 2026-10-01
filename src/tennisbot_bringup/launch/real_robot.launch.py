@@ -142,6 +142,25 @@ def generate_launch_description():
         condition=UnlessCondition(use_slam)
     )
 
+    camera_node = Node(
+        package="usb_cam",
+        executable="usb_cam_node_exe",
+        name="camera",
+        output="screen",
+        parameters=[{
+            "video_device": "/dev/video0",
+            "image_width": 640,
+            "image_height": 480,
+            "framerate": 30.0,
+            "pixel_format": "yuyv",
+            "frame_id": "camera_link",
+        }],
+        remappings=[
+            ("image_raw", "/camera/image_raw"),
+            ("camera_info", "/camera/camera_info"),
+        ],
+    )
+
     return LaunchDescription([
         use_slam_arg,
         use_sim_time_arg,
@@ -158,4 +177,5 @@ def generate_launch_description():
         navigation,
 
         patrol_nodes,
+        camera_node,
     ])
