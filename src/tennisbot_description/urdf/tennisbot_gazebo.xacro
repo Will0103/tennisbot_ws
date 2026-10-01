@@ -7,6 +7,13 @@
             <diffuse>0.851 0.729 0.314 1</diffuse>
         </material>
     </gazebo>
+
+    <gazebo reference="support_link">
+        <material>
+            <ambient>0.851 0.729 0.314 1</ambient>
+            <diffuse>0.851 0.729 0.314 1</diffuse>
+        </material>
+    </gazebo>
     
     <gazebo reference="left_wheel_link">
         <mu1>1000000000000000.0</mu1>

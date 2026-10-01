@@ -97,6 +97,29 @@
         <axis xyz="0 1 0" />
     </joint>
 
+    <link name="support_link">
+        <visual>
+            <origin xyz="0 0 ${0.01 / 2.0} " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.043 0.028 0.01" />
+            </geometry>
+            <material name="light_yellow" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${0.003 / 2.0} " rpy="0 0 0"/>
+            <geometry>
+                <box size="0.043 0.028 0.01" />
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.05" x="0.043" y="0.028" z="0.01" o_xyz="0 0 ${0.01 / 2.0}" o_rpy="0 0 0" />
+    </link>
+
+    <joint name="support_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="support_link" />
+        <origin xyz="${base_length / 2.0 + 0.043 / 2.0} 0 0" rpy="0 0 0" />
+    </joint>
+
 
     <link name="caster_wheel_link">   
         <visual>
@@ -118,7 +141,7 @@
     <joint name="base_casterwheel_joint" type="fixed">
         <parent link="base_link" />
         <child link="caster_wheel_link" />
-        <origin xyz="${base_length * 3.0 / 8.0} 0 ${-wheel_radius / 2.0}" rpy="0 0 0" />
+        <origin xyz="0.15 0 ${-wheel_radius / 2.0}" rpy="0 0 0" />
     </joint>
 
     <link name="IMU_link">
