@@ -6,7 +6,7 @@ controller_server:
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
     min_theta_velocity_threshold: 0.001
-    failure_tolerance: 0.3
+    failure_tolerance: 2.0
     controller_plugins: ["FollowPath"]
     odom_topic: /diffdrive_controller/odom
 
