@@ -106,7 +106,7 @@
             <material name="light_yellow" />
         </visual>
         <collision>
-            <origin xyz="0 0 ${0.003 / 2.0} " rpy="0 0 0"/>
+            <origin xyz="0 0 ${0.01 / 2.0} " rpy="0 0 0"/>
             <geometry>
                 <box size="0.043 0.028 0.01" />
             </geometry>
