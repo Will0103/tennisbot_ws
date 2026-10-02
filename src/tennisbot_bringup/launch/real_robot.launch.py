@@ -136,8 +136,8 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time},
             {"cancel_button": 1},
             {"start_button": 3},
-            {"waypoints_x": [-0.1, -1.0, -3.1, -4.0, -5.0, -5.0, -4.1, -2.6, -1.4, -0.1]},
-            {"waypoints_y": [0.2, 1.3, 1.5, 1.5, 1.0, 0.0, -0.98, -0.98, -4.1, 0.2]},
+            {"waypoints_x": [-1.0, -3.1, -4.0, -5.0, -5.0, -4.1, -2.6, -1.4, -0.1]},
+            {"waypoints_y": [1.3, 1.5, 1.5, 1.0, 0.0, -0.98, -0.98, -4.1, 0.2]},
         ],
         condition=UnlessCondition(use_slam)
     )
