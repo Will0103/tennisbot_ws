@@ -26,11 +26,11 @@ ekf_filter_node:
 
 
     # MPU6050
-    imu0: /imu/out
+    # imu0: /imu/out
 
-    imu0_config:
-      [false, false, false,
-       false, false, false,
-       false, false, false,
-       false, false, true,
-       false, false, false]
+    # imu0_config:
+    #   [false, false, false,
+    #    false, false, false,
+    #    false, false, false,
+    #    false, false, true,
+    #    false, false, false]
