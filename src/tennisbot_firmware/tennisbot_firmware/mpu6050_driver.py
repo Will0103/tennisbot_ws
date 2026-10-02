@@ -121,8 +121,7 @@ class MPU6050_Driver(Node):
         
     def read_raw_data(self, addr):
         #Accelero and Gyro value are 16-bit
-        high = self.bus_.read_byte_data(DEVICE_ADDRESS, addr)
-        low = self.bus_.read_byte_data(DEVICE_ADDRESS, addr+1)
+        high, low = self.bus_.read_i2c_block_data(DEVICE_ADDRESS, addr, 2)
         
         #concatenate higher and lower value
         value = ((high << 8) | low)
