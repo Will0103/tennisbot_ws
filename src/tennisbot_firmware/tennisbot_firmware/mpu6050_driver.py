@@ -5,6 +5,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Imu
+from copy import deepcopy
 
 PWR_MGMT_1   = 0x6B
 SMPLRT_DIV   = 0x19
@@ -34,6 +35,8 @@ class MPU6050_Driver(Node):
 
         # ROS 2 Interface
         self.imu_pub_ = self.create_publisher(Imu, "/imu/out", qos_profile=qos_profile_sensor_data)
+        self.gyro_raw_pub_ = self.create_publisher(Imu, "/imu/gyro_raw", qos_profile=qos_profile_sensor_data # TEST
+                                                   )
         self.imu_msg_ = Imu()
         self.imu_msg_.header.frame_id = "IMU_link"
 
@@ -88,7 +91,17 @@ class MPU6050_Driver(Node):
 
 
             self.imu_msg_.header.stamp = self.get_clock().now().to_msg()
+
+
+            # 診斷資料：Z 軸轉速尚未扣 bias，也未經 deadzone。
+            # 其餘欄位維持原本內容，這不是完整的原始加速度資料。
+            raw_msg = deepcopy(self.imu_msg_)
+            raw_msg.angular_velocity.z = gyro_z / GYRO_SCALE
+            self.gyro_raw_pub_.publish(raw_msg)
+
+            # EKF 繼續接收原本處理過的訊號。
             self.imu_pub_.publish(self.imu_msg_)
+
         except OSError:
             self.is_connected_ = False
 
