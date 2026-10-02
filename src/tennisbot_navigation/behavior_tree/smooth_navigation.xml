@@ -3,14 +3,17 @@
   <BehaviorTree ID="Untitled">
     <PipelineSequence>
       <RateController hz="1">
-        <Sequence>
+        <!-- <Sequence>
           <ComputePathToPose goal="{goal}"
                              planner_id="GridBased"
                              path="{path}"/>
           <SmoothPath smoother_id="simple_smoother"
                       unsmoothed_path="{path}"
                       smoothed_path="{smoothed_path}"/>
-        </Sequence>
+        </Sequence> -->
+        <ComputePathToPose goal="{goal}"
+                             planner_id="GridBased"
+                             path="{smoothed_path}"/>
       </RateController>
       <FollowPath controller_id="FollowPath"
                   path="{smoothed_path}"/>
