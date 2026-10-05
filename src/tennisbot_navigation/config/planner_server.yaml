@@ -32,14 +32,14 @@ global_costmap:
       robot_base_frame: base_footprint #modify
       use_sim_time: true
       footprint_padding: 0.03
-      footprint: "[[0.170, 0.105],
-                  [0.140, 0.135],
-                  [-0.110, 0.135],
-                  [-0.140, 0.105],
-                  [-0.140, -0.105],
-                  [-0.110, -0.135],
-                  [0.140, -0.135],
-                  [0.170, -0.105]]"
+      footprint: "[[0.2325, 0.105],
+                  [0.2025, 0.135],
+                  [-0.0475, 0.135],
+                  [-0.0775, 0.105],
+                  [-0.0775, -0.105],
+                  [-0.0475, -0.135],
+                  [0.2025, -0.135],
+                  [0.2325, -0.105]]"
       resolution: 0.03
       track_unknown_space: true
       # plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
