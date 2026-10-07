@@ -137,7 +137,7 @@ def generate_launch_description():
             {"cancel_button": 1},
             {"start_button": 3},
             {"waypoints_x": [-1.0, -3.1, -4.0, -5.0, -5.0, -4.1, -2.6, -0.1]},
-            {"waypoints_y": [1.3, 1.5, 1.5, 1.0, 0.0, -0.98, -0.98, 0.2]},
+            {"waypoints_y": [1.3, 1.5, 1.5, 1.0, 0.0, -0.98, -0.98, -0.1]},
         ],
         condition=UnlessCondition(use_slam)
     )
