@@ -161,6 +161,18 @@ def generate_launch_description():
         ],
     )
 
+    vision = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("tennisbot_vision"),
+            "launch",
+            "vision.launch.py",
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time,
+            "enable_button": "10", 
+        }.items(),
+    )
+
     return LaunchDescription([
         use_slam_arg,
         use_sim_time_arg,
@@ -178,4 +190,5 @@ def generate_launch_description():
 
         patrol_nodes,
         camera_node,
+        vision,
     ])

@@ -20,6 +20,8 @@ from rclpy.action import ActionClient
 from sensor_msgs.msg import Joy
 from std_msgs.msg import Bool
 
+from sensor_msgs.msg import CompressedImage
+
 class BallDetectorNode(Node):
     def __init__(self):
         super().__init__("ball_detector")
@@ -64,6 +66,9 @@ class BallDetectorNode(Node):
         self.patrol_status = False
         
         self.get_logger().info("Ball detector started !")
+
+        #
+        self.debug_image_pub = self.create_publisher(CompressedImage,"/ball_detector/debug_image/compressed",qos_profile_sensor_data)
 
     def info_callback(self, msg):
         self.fx = msg.k[0]
@@ -180,10 +185,20 @@ class BallDetectorNode(Node):
         else:
             self.isball_counter = 0
 
-        cv2.imshow("Webcam", frame)
-        # cv2.imshow("Mask", mask)
+        # cv2.imshow("Webcam", frame)
+        # # cv2.imshow("Mask", mask)
 
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
+
+        if self.debug_image_pub.get_subscription_count() > 0:
+            ok, encoded = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
+
+            if ok:
+                debug_msg = CompressedImage()
+                debug_msg.header = msg.header
+                debug_msg.format = "bgr8; jpeg compressed bgr8"
+                debug_msg.data = encoded.tobytes()
+                self.debug_image_pub.publish(debug_msg)
 
     ### For NavigateToPose Action
     def goal_response_callback(self, future):
