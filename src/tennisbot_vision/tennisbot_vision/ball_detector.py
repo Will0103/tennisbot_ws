@@ -33,8 +33,7 @@ class BallDetectorNode(Node):
         self.image_sub = self.create_subscription(Image, "/camera/image_raw", self.image_callback, qos_profile_sensor_data)
         self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, qos_profile_sensor_data)
 
-        # self.declare_parameter("lower1", [31, 65, 86])
-        self.declare_parameter("lower1", [27, 65, 43])
+        self.declare_parameter("lower1", [31, 65, 86])
         self.declare_parameter("upper1", [52, 255, 255])
         self.declare_parameter("lower2", [3, 98, 104])
         self.declare_parameter("upper2", [15, 255, 255])
@@ -110,19 +109,23 @@ class BallDetectorNode(Node):
         else:
             cv2.putText(frame, "Disable find ball", (370, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
 
-        if contours:
-            largest_contour = max(contours, key=cv2.contourArea)
-            area = cv2.contourArea(largest_contour)
+        candidates = []
+        for contour in contours:
+            candidate_area = cv2.contourArea(contour)
+            candidate_perimeter = cv2.arcLength(contour, True)
 
-            perimeter = cv2.arcLength(largest_contour, True)
+            if candidate_area <= 100 or candidate_perimeter <= 0:
+                continue
 
-            if perimeter > 0:
-                circularity = 4 * np.pi * area / (perimeter * perimeter)
-                
-            else:
-                circularity = 0                
+            candidate_circularity = (4 * np.pi * candidate_area / (candidate_perimeter * candidate_perimeter))
+
+            if candidate_circularity > 0.60:
+                candidates.append((contour, candidate_area, candidate_circularity))
+    
+        if candidates: 
+            largest_contour, area, circularity = max(candidates, key=lambda candidate: candidate[1])
             
-            if area > 100 and circularity > 0.60 and self.enable_gotoball:
+            if self.enable_gotoball:
                 #Locate tennis ball
                 (x, y), radius = cv2.minEnclosingCircle(largest_contour)
 
