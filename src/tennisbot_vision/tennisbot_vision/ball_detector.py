@@ -70,6 +70,7 @@ class BallDetectorNode(Node):
         #
         self.debug_image_pub = self.create_publisher(CompressedImage,"/ball_detector/debug_image/compressed",qos_profile_sensor_data)
         self.debug_image_pub_mask = self.create_publisher(CompressedImage,"/ball_detector/debug_image/compressed_mask",qos_profile_sensor_data)
+        self.debug_image_pub_mask = self.create_publisher(CompressedImage,"/ball_detector/debug_mask/compressed",qos_profile_sensor_data)
 
     def info_callback(self, msg):
         self.fx = msg.k[0]
@@ -193,8 +194,6 @@ class BallDetectorNode(Node):
         
         if self.debug_image_pub.get_subscription_count() > 0:
             ok, encoded = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
-            ok_mask, encoded_mask = cv2.imencode(".jpg", mask, [cv2.IMWRITE_JPEG_QUALITY, 75])
-            
 
             if ok:
                 debug_msg = CompressedImage()
@@ -203,12 +202,17 @@ class BallDetectorNode(Node):
                 debug_msg.data = encoded.tobytes()
                 self.debug_image_pub.publish(debug_msg)
 
+        # Mask
+        if self.debug_image_pub_mask.get_subscription_count() > 0:
+            ok_mask, encoded_mask = cv2.imencode(".jpg", mask, [cv2.IMWRITE_JPEG_QUALITY, 75])
+
+            if ok_mask:
                 debug_msg_mask = CompressedImage()
                 debug_msg_mask.header = msg.header
-                debug_msg_mask.format = "bgr8; jpeg compressed bgr8"
+                debug_msg_mask.format = "mono8; jpeg compressed mono8"
                 debug_msg_mask.data = encoded_mask.tobytes()
                 self.debug_image_pub_mask.publish(debug_msg_mask)
-
+    
     ### For NavigateToPose Action
     def goal_response_callback(self, future):
         self.goal_handle_ = future.result()
