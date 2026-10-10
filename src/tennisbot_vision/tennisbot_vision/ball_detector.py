@@ -32,11 +32,12 @@ class BallDetectorNode(Node):
         self.bridge = CvBridge()
         self.image_sub = self.create_subscription(Image, "/camera/image_raw", self.image_callback, qos_profile_sensor_data)
         self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, qos_profile_sensor_data)
-        
-        self.lower1 = np.array([31, 65 , 86])
-        self.upper1 = np.array([52, 255, 255])
-        self.lower2 = np.array([3, 198, 104])
-        self.upper2 = np.array([15, 255, 255])
+
+        self.declare_parameter("lower1", [31, 65, 86])
+        self.declare_parameter("upper1", [52, 255, 255])
+        self.declare_parameter("lower2", [3, 98, 104])
+        self.declare_parameter("upper2", [15, 255, 255])
+    
         self.kernel = np.ones((11, 11), np.uint8)
 
         #Cancel Patroling 
@@ -85,6 +86,11 @@ class BallDetectorNode(Node):
     def image_callback(self, msg: Image):
         if self.fx is None:
             return
+
+        self.lower1 = np.array(self.get_parameter("lower1").value, dtype=np.uint8)
+        self.upper1 = np.array(self.get_parameter("upper1").value, dtype=np.uint8)
+        self.lower2 = np.array(self.get_parameter("lower2").value, dtype=np.uint8)
+        self.upper2 = np.array(self.get_parameter("upper2").value, dtype=np.uint8)
         
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8") # image_raw to CV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
