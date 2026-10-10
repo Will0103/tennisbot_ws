@@ -154,6 +154,8 @@ def generate_launch_description():
             "framerate": 30.0,
             "pixel_format": "yuyv2rgb",
             "frame_id": "camera_link",
+            "camera_name": "tennisbot_camera",
+            "camera_info_url": "file:///home/will/.ros/camera_info/tennisbot_camera.yaml",
         }],
         remappings=[
             ("image_raw", "/camera/image_raw"),

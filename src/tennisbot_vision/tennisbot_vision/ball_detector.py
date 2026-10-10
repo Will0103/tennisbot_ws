@@ -33,7 +33,8 @@ class BallDetectorNode(Node):
         self.image_sub = self.create_subscription(Image, "/camera/image_raw", self.image_callback, qos_profile_sensor_data)
         self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, qos_profile_sensor_data)
 
-        self.declare_parameter("lower1", [31, 65, 86])
+        # self.declare_parameter("lower1", [31, 65, 86])
+        self.declare_parameter("lower1", [27, 65, 43])
         self.declare_parameter("upper1", [52, 255, 255])
         self.declare_parameter("lower2", [3, 98, 104])
         self.declare_parameter("upper2", [15, 255, 255])
@@ -70,7 +71,6 @@ class BallDetectorNode(Node):
 
         #
         self.debug_image_pub = self.create_publisher(CompressedImage,"/ball_detector/debug_image/compressed",qos_profile_sensor_data)
-        self.debug_image_pub_mask = self.create_publisher(CompressedImage,"/ball_detector/debug_image/compressed_mask",qos_profile_sensor_data)
         self.debug_image_pub_mask = self.create_publisher(CompressedImage,"/ball_detector/debug_mask/compressed",qos_profile_sensor_data)
 
     def info_callback(self, msg):
