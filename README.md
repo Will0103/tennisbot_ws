@@ -4,7 +4,7 @@
   <img src="docs/Tennisbot_camera_robot.jpg" alt="Tennisbot with a front-mounted Logitech C270 camera, RPLidar A1, and differential-drive base" width="760">
 </p>
 
-A differential-drive robot built from scratch with ROS 2 Jazzy. It runs both in **Gazebo simulation** and on a **physical robot**. It maps its environment, localizes itself, patrols a set of waypoints autonomously, and uses OpenCV for tennis-ball detection and vision-guided navigation. The physical robot now includes a calibrated USB camera; ball detection and distance estimation are working on hardware, with approach behavior still being tuned.
+A differential-drive robot built from scratch with ROS 2 Jazzy. It runs both in **Gazebo simulation** and on a **physical robot**. It maps its environment, localizes itself, patrols a set of waypoints autonomously, and uses OpenCV for tennis-ball detection and vision-guided navigation. The physical robot now includes a calibrated USB camera; ball detection, distance estimation, and vision-guided approach are working on hardware.
 
 The project covers the full robotics stack: **robot modeling → embedded motor control → sensing → sensor fusion → mapping and localization → navigation → visual target approach**. Custom C++ and Python nodes connect these pieces to Nav2, SLAM Toolbox, and ros2_control.
 
@@ -18,8 +18,8 @@ The project covers the full robotics stack: **robot modeling → embedded motor 
 | AMCL localization + EKF odometry | Done | Done |
 | Nav2 navigation | Done | Running; costmap and collision-monitor tuning in progress |
 | Autonomous waypoint patrol | Done | Done |
-| OpenCV ball detection and distance estimation | Done | Running with a calibrated USB camera; HSV tuning in progress |
-| Vision-guided ball approach | Done | Integrated; testing and tuning in progress |
+| OpenCV ball detection and distance estimation | Done | Done — calibrated USB camera with tuned HSV thresholds |
+| Vision-guided ball approach | Done | Working on the physical robot |
 
 ## Demos
 
@@ -267,7 +267,7 @@ The home patrol route (8 waypoints) is defined in [`real_robot.launch.py`](src/t
 
 **Now:** Tuning the costmap, controller, and collision-monitor parameters on the physical robot. A home has many small obstacles and narrow passages, so the robot has to pass close to furniture without triggering unnecessary stops.
 
-**Camera integration:** The physical robot now runs a calibrated USB camera and the OpenCV detector, with compressed image and mask previews in RViz. Current vision work focuses on rejecting furniture colors, checking distance estimates, and validating the approach behavior on hardware.
+**Camera integration:** The physical robot now runs a calibrated USB camera and the OpenCV detector, with compressed image and mask previews in RViz. HSV tuning is complete for the current home setup, and the robot can detect a ball, estimate its distance, and approach it.
 
 **Later:** Automatic patrol resumption after an approach, and eventually a mechanism to collect tennis balls.
 
