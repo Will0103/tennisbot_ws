@@ -1,6 +1,10 @@
 # Tennisbot — Autonomous Patrol & Vision-Guided Navigation
 
-A differential-drive robot built from scratch with ROS 2 Jazzy. It runs both in **Gazebo simulation** and on a **physical robot**. It maps its environment, localizes itself, patrols a set of waypoints autonomously, and, in simulation, detects a tennis ball with OpenCV and drives to it.
+<p align="center">
+  <img src="docs/Tennisbot_camera_robot.jpg" alt="Tennisbot with a front-mounted Logitech C270 camera, RPLidar A1, and differential-drive base" width="760">
+</p>
+
+A differential-drive robot built from scratch with ROS 2 Jazzy. It runs both in **Gazebo simulation** and on a **physical robot**. It maps its environment, localizes itself, patrols a set of waypoints autonomously, and uses OpenCV for tennis-ball detection and vision-guided navigation. The physical robot now includes a calibrated USB camera; ball detection and distance estimation are working on hardware, with approach behavior still being tuned.
 
 The project covers the full robotics stack: **robot modeling → embedded motor control → sensing → sensor fusion → mapping and localization → navigation → visual target approach**. Custom C++ and Python nodes connect these pieces to Nav2, SLAM Toolbox, and ros2_control.
 
@@ -14,17 +18,18 @@ The project covers the full robotics stack: **robot modeling → embedded motor 
 | AMCL localization + EKF odometry | Done | Done |
 | Nav2 navigation | Done | Running; costmap and collision-monitor tuning in progress |
 | Autonomous waypoint patrol | Done | Done |
-| OpenCV ball detection and approach | Done | Next milestone |
+| OpenCV ball detection and distance estimation | Done | Running with a calibrated USB camera; HSV tuning in progress |
+| Vision-guided ball approach | Done | Integrated; testing and tuning in progress |
 
 ## Demos
 
 ### Physical robot — autonomous waypoint patrol at home
 
-The robot runs autonomous waypoint patrol on a SLAM map of a home environment, with no joystick input. The left clip shows the robot at real speed; the right clip is an RViz recording of a separate patrol run at 5× speed, showing the map, laser scan, AMCL particle cloud, and costmaps as the robot moves.
+The robot runs autonomous waypoint patrol on a SLAM map of a home environment, with no joystick input. The left clip is a new recording of the camera-equipped robot at real speed (a continuous 13-second excerpt); the right clip is an RViz recording of a separate patrol run at 5× speed, showing the map, laser scan, AMCL particle cloud, and costmaps as the robot moves.
 
 | Robot (real speed) | RViz (5× speed) |
 | --- | --- |
-| <img src="docs/Real_robot_patrol_GIF.gif" alt="Physical Tennisbot patrolling autonomously at home" width="420"> | <img src="docs/Real_robot_rviz_GIF.gif" alt="RViz view of the physical robot patrolling on the home map" width="380"> |
+| <img src="docs/Real_robot_patrol_GIF.gif" alt="Camera-equipped Tennisbot patrolling autonomously at home" width="420"> | <img src="docs/Real_robot_rviz_GIF.gif" alt="RViz view of the physical robot patrolling on the home map" width="380"> |
 
 ### Simulation — Find Ball OFF vs ON
 
@@ -51,6 +56,7 @@ The project does not yet include a ball-collection mechanism.
 | ROS 2 hardware interface | Custom C++ `ros2_control` `SystemInterface` plugin ([`tennisbot_interface.cpp`](src/tennisbot_firmware/src/tennisbot_interface.cpp)) that sends wheel velocity commands and reads encoder feedback over USB serial (115200 baud) |
 | IMU | MPU6050 over I²C, read by a custom Python driver ([`mpu6050_driver.py`](src/tennisbot_firmware/tennisbot_firmware/mpu6050_driver.py)) with bias compensation, published at 100 Hz |
 | LiDAR | SLAMTEC RPLidar A1 through `rplidar_ros` |
+| Camera | Front-mounted Logitech C270 USB webcam through `usb_cam`; 640×480 images and calibrated `CameraInfo` for monocular distance estimation |
 | Odometry fusion | `robot_localization` EKF fusing wheel-odometry forward velocity and yaw rate with IMU yaw rate; publishes `odom → base_footprint` at 50 Hz |
 | Compute | Onboard Linux computer running the full ROS 2 stack (drivers, localization, Nav2, patrol) |
 
@@ -80,7 +86,7 @@ flowchart TD
     HW --> ODOM[Wheel odometry]
     HW --> IMU[IMU]
     HW --> L[LiDAR scan]
-    HW --> C[Camera image and CameraInfo<br/>simulation]
+    HW --> C[Camera image and CameraInfo<br/>Gazebo or USB camera]
 
     ODOM --> EKF[EKF<br/>robot_localization]
     IMU --> EKF
@@ -121,7 +127,7 @@ camera_link → camera_optical_link  robot_state_publisher
 ## From camera detection to a navigation goal
 
 1. Read the RGB image and the camera intrinsics from `CameraInfo`.
-2. Combine two HSV color masks, apply morphological closing, and check the largest contour's area (> 100 px) and circularity (> 0.6).
+2. Combine two HSV color masks and apply morphological closing. Filter each contour by area (> 100 px) and circularity (> 0.6), then select the largest qualifying candidate.
 3. Estimate the ball's position in the camera optical frame from its known **67 mm diameter**:
 
    ```text
@@ -166,7 +172,7 @@ source install/setup.bash
 
 **Simulation:** Gazebo Sim, `ros_gz_sim`, `ros_gz_bridge`, `gz_ros2_control`, Python OpenCV, NumPy, and `cv_bridge`.
 
-**Physical robot:** `rplidar_ros`, LibSerial (for the hardware interface), `python3-smbus` (for the IMU driver), and the Arduino `PID_v1` library for the firmware.
+**Physical robot:** `usb_cam`, `compressed_image_transport`, Python OpenCV, NumPy, `cv_bridge`, `rplidar_ros`, LibSerial (for the hardware interface), `python3-smbus` (for the IMU driver), and the Arduino `PID_v1` library for the firmware.
 
 The package manifests do not yet list every runtime dependency, so install these before building.
 
@@ -213,7 +219,8 @@ ros2 run nav2_map_server map_saver_cli -f warehouse_map --ros-args -p use_sim_ti
 
 1. Flash [`robot_control_safe.ino`](src/tennisbot_firmware/firmware/robot_control_safe/robot_control_safe.ino) to the Arduino. [`encoder_test.ino`](src/tennisbot_firmware/firmware/encoder_test/encoder_test.ino) is available for checking the encoders first.
 2. Update the serial port paths for your devices: the Arduino port in [`tennisbot_ros2_control.xacro`](src/tennisbot_description/urdf/tennisbot_ros2_control.xacro) and the LiDAR port in [`rplidar_a1.yaml`](src/tennisbot_bringup/config/rplidar_a1.yaml). Both use `/dev/serial/by-id/...` paths so they stay stable across reboots.
-3. Launch navigation and patrol on the saved home map:
+3. Connect the USB camera and check `video_device` in [`real_robot.launch.py`](src/tennisbot_bringup/launch/real_robot.launch.py). Place the calibration YAML at `/home/will/.ros/camera_info/tennisbot_camera.yaml`, or update `camera_info_url` to your own path. Keep the calibration resolution at 640×480 and `camera_name` consistent with the YAML. Calibration is specific to the camera and imaging settings.
+4. Launch navigation and patrol on the saved home map:
 
    ```bash
    ros2 launch tennisbot_bringup real_robot.launch.py
@@ -225,7 +232,9 @@ ros2 run nav2_map_server map_saver_cli -f warehouse_map --ros-args -p use_sim_ti
    ros2 launch tennisbot_bringup real_robot.launch.py use_slam:=true
    ```
 
-4. Open RViz with a layout from `rviz_temp/` to watch the map, laser scan, costmaps, and collision-monitor polygons.
+5. Open RViz with a layout from `rviz_temp/` to watch the map, laser scan, costmaps, and collision-monitor polygons. The detector publishes annotated JPEG images on `/ball_detector/debug_image/compressed` and the segmentation mask on `/ball_detector/debug_mask/compressed`. These previews are available even with Find Ball disabled.
+
+   Confirm that `/camera/camera_info` contains nonzero focal lengths before testing distance estimation. Tune the `lower1`, `upper1`, `lower2`, and `upper2` HSV parameters for the room lighting; changes made with `ros2 param set` must be saved in the launch configuration or parameter defaults to survive a restart.
 
 | Gamepad button | Function |
 | --- | --- |
@@ -233,8 +242,9 @@ ros2 run nav2_map_server map_saver_cli -f warehouse_map --ros-args -p use_sim_ti
 | Hold `5` | Turbo manual driving |
 | Press `3` | Start or resume patrol |
 | Press `1` | Cancel patrol |
+| Press `10` | Toggle Find Ball on the physical robot |
 
-The home patrol route (9 waypoints) is defined in [`real_robot.launch.py`](src/tennisbot_bringup/launch/real_robot.launch.py).
+The home patrol route (8 waypoints) is defined in [`real_robot.launch.py`](src/tennisbot_bringup/launch/real_robot.launch.py).
 
 ## Main configuration files
 
@@ -257,7 +267,7 @@ The home patrol route (9 waypoints) is defined in [`real_robot.launch.py`](src/t
 
 **Now:** Tuning the costmap, controller, and collision-monitor parameters on the physical robot. A home has many small obstacles and narrow passages, so the robot has to pass close to furniture without triggering unnecessary stops.
 
-**Next:** Mount a camera on the physical robot and port the ball detection and approach workflow from simulation to hardware.
+**Camera integration:** The physical robot now runs a calibrated USB camera and the OpenCV detector, with compressed image and mask previews in RViz. Current vision work focuses on rejecting furniture colors, checking distance estimates, and validating the approach behavior on hardware.
 
 **Later:** Automatic patrol resumption after an approach, and eventually a mechanism to collect tennis balls.
 
@@ -268,7 +278,7 @@ Not in scope yet: ball collection, multi-object tracking, and tracking object id
 - The robot base design, `ros2_control` hardware interface, Arduino motor-control firmware, and MPU6050 driver started from the Bumperbot examples in Antonio Brandi's Udemy course *Self Driving and ROS 2 – Learn by Doing!*. I adapted them to this robot's hardware (wheel geometry, encoder calibration, serial devices).
 - Built on top of that base: the patrol node, the OpenCV ball-detection and approach node, the Nav2 / collision-monitor / EKF configuration and tuning, the home map, and the RPLidar A1 integration.
 - Gazebo worlds and furniture models: [AWS RoboMaker Small House World](https://github.com/aws-robotics/aws-robomaker-small-house-world) and [Small Warehouse World](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world).
-  
+
 ## Author
 
 Will Hsu — [GitHub](https://github.com/Will0103)

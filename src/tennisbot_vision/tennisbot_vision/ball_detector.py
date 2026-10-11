@@ -33,10 +33,10 @@ class BallDetectorNode(Node):
         self.image_sub = self.create_subscription(Image, "/camera/image_raw", self.image_callback, qos_profile_sensor_data)
         self.info_sub = self.create_subscription(CameraInfo, "/camera/camera_info", self.info_callback, qos_profile_sensor_data)
 
-        self.declare_parameter("lower1", [31, 65, 86])
-        self.declare_parameter("upper1", [52, 255, 255])
-        self.declare_parameter("lower2", [3, 98, 104])
-        self.declare_parameter("upper2", [15, 255, 255])
+        self.declare_parameter("lower1", [30, 140, 43])
+        self.declare_parameter("upper1", [43, 255, 255])
+        self.declare_parameter("lower2", [0, 150, 40])
+        self.declare_parameter("upper2", [12, 255, 255])
     
         self.kernel = np.ones((11, 11), np.uint8)
 
